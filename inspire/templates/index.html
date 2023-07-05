@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<br>
+<a href="/signup">Sign Up</a>
+<br>
+<a href="/login">Log In</a>
+<br>
+<br>
+<b>Get In Touch</b>
+<form action="/" method="post" autocomplete="off">
+    {% csrf_token %}
+    <input name="name" placeholder="Name">
+    <br>
+    <input name="email" placeholder="Email">
+    <br>
+    <textarea name="message" cols="40" rows="5" placeholder="Your Message">{{ message }}</textarea>
+    <br>
+    <input type="submit" value="Send Message">
+</form>
+
+{{ error }}
+
+{% endblock %}

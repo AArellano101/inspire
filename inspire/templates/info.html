@@ -1,0 +1,14 @@
+<script>
+    $(() => {
+        $('#password-checkbox').change(function() {
+            $(".password").each(function() {
+                if ($('#password-checkbox').is(":checked")) {
+                    $(this)[0].type = ""
+                }
+                else {
+                    $(this)[0].type = "password"
+                }
+            })
+        })
+    })
+</script>

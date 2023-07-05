@@ -1,0 +1,170 @@
+{% extends "layout.html" %}
+{% load tag_extras %}
+
+{% block body %}
+
+<div>
+   Hello, {{ user.username }}
+</div>
+
+<h2>Today</h2>
+<div id="posts"> 
+    <div class="post" id="quote-{{ posts.quote.postid }}" data-postid="{{ posts.quote.postid }}">
+        <div class="post-header">
+            <h3>Today's Quote</h3>
+            <div class="post-like" id="quote-like-{{ posts.quote.postid }}">
+                {% if liked|keyvalue:posts.quote.postid %}
+                <span class="like-icon" data-like="liked">Unlike</span>
+                {% else %}
+                <span class="like-icon" data-like="unliked">Like</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="post-body-redirect" data-postid="{{ posts.quote.postid }}">
+            <div id="quote-title">{{ posts.quote.title }}</div>
+            <div id="quote-text">{{ posts.quote.text }}</div>
+            <div id="quote-description">{{ posts.quote.description }}</div>
+        </div>
+        
+        <div id="quote-tags">
+            {% for tag in posts.quote.tags %}
+            <span class="tag">
+                {{ tag }}
+            </span>
+            {% endfor %}
+        </div>
+        <div id="quote-date">{{ posts.quote.readablecreated }}</div>
+    </div>
+
+    <div class="post" id="speech-{{ posts.speech.postid }}" data-postid="{{ posts.speech.postid }}">
+        <div class="post-header">
+            <h3>Today's Speech</h3>
+            <div class="post-like" id="speech-like-{{ posts.speech.postid }}">
+                {% if liked|keyvalue:posts.speech.postid %}
+                <span class="like-icon" data-like="liked">Unlike</span>
+                {% else %}
+                <span class="like-icon" data-like="unliked">Like</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="post-body-redirect" data-postid="{{ posts.speech.postid }}">
+            <div id="speech-title">{{ posts.speech.title }}</div>
+            <div id="speech-video">
+                <div class="player-container">
+                    <div class="plyr__video-embed" id="player">
+                        <iframe src="{{ posts.speech.src }}" allowfullscreen rel="0" id="speech-video-player"></iframe>
+                    </div>
+                </div>
+                <script src="https://cdn.plyr.io/3.6.2/plyr.js"></script>
+                <script>
+                    const player = new Plyr('#player');
+                </script>    
+            </div>
+            <div id="speech-description">{{ posts.speech.description }}</div>
+        </div>
+        
+        <div id="speech-tags">
+            {% for tag in posts.speech.tags %}
+            <span class="tag">
+                {{ tag }}
+            </span>
+            {% endfor %}
+        </div>
+        <div id="speech-date">{{ posts.speech.readablecreated }}</div>
+    </div>
+
+    <div class="post" id="article-{{ posts.article.postid }}" data-postid="{{ posts.article.postid }}">
+        <div class="post-header">
+            <h3>Today's Reading</h3>
+            <div class="post-like" id="article-like-{{ posts.article.postid }}">
+                {% if liked|keyvalue:posts.article.postid %}
+                <span class="like-icon" data-like="liked">Unlike</span>
+                {% else %}
+                <span class="like-icon" data-like="unliked">Like</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="post-body-redirect" data-postid="{{ posts.article.postid }}">
+            <div id="article-title">{{ posts.article.title }}</div>
+            <div id="article-description">{{ posts.article.description }}</div>
+            <iframe src="{{ posts.article.text }}" id="article-text"></iframe>
+        </div>
+        <div id="article-tags">
+            {% for tag in posts.article.tags %}
+            <span class="tag">
+                {{ tag }}
+            </span>
+            {% endfor %}
+        </div>
+        <div id="article-date">{{ posts.article.readablecreated }}</div>
+    </div>
+
+    <div class="post-container" id="misc">
+        <div class="post" id="movie-{{ posts.movie.postid }}" data-postid="{{ posts.movie.postid }}">
+            <div class="post-header">
+                <h3>Movie Recommendation</h3>
+                <div class="post-like" id="movie-like-{{ posts.movie.postid }}">
+                    {% if liked|keyvalue:posts.movie.postid %}
+                    <span class="like-icon" data-like="liked">Unlike</span>
+                    {% else %}
+                    <span class="like-icon" data-like="unliked">Like</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="post-body-redirect" data-postid="{{ posts.movie.postid }}">
+                <div id="movie-title">{{ posts.movie.title }}</div>
+                <div id="movie-description">{{ posts.movie.text }}</div>
+                <image id="movie-image" src="{{ posts.movie.image }}"></image>
+            </div>
+            <div id="movie-tags">
+                {% for tag in posts.movie.tags %}
+                <span class="tag">
+                    {{ tag }}
+                </span>
+                {% endfor %}
+            </div>
+            <div id="movie-date">{{ posts.movie.readablecreated }}</div>
+        </div>
+
+        <div class="post" id="album-{{ posts.album.postid }}" data-postid="{{ posts.album.postid }}">
+            <div class="post-header">
+                <h3>Album Recommendation</h3>
+                <div class="post-like" id="album-like-{{ posts.album.postid }}">
+                    {% if liked|keyvalue:posts.album.postid %}
+                    <span class="like-icon" data-like="liked">Unlike</span>
+                    {% else %}
+                    <span class="like-icon" data-like="unliked">Like</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="post-body-redirect" data-postid="{{ posts.album.postid }}">
+                <div id="album-title">{{ posts.album.title }}</div>
+                <div id="album-description">{{ posts.album.text }}</div>
+                <image id="album-image" src="{{ posts.album.image }}"></image>
+            </div>
+            <div id="album-tags">
+                {% for tag in posts.album.tags %}
+                <span class="tag">
+                    {{ tag }}
+                </span>
+                {% endfor %}
+            </div>
+            <div id="album-date">{{ posts.album.readablecreated }}</div>
+        </div>
+    </div>
+</div>
+
+
+{% if user.is_staff %}
+<br>
+<a href="/staff">Staff Resources</a>
+{% endif %}
+
+<form action="/feed" method="post">
+    {% csrf_token %}
+    <input type="hidden" value="logout" name="type">
+    <input type="submit" value="Log Out">
+</form>
+
+{% endblock %}

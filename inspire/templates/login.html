@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+{% include "info.html" %}
+
+<form action="/login" method="post" autocomplete="on">
+    {% csrf_token %}
+    <input name="username" placeholder="Username/Email">
+    <br>
+    <input name="password" placeholder="Password" type="password" class="password">
+    <input type="checkbox" id="password-checkbox">Show Password
+    <br>
+    <input name="remember-me" type="checkbox">Remember Me
+    <br>
+    <input type="submit" value="Log In">
+</form>
+
+{{ message }}
+<br>
+<a href="/forgotpassword">Forgot Password?</a>
+<br>
+<a href="/signup">Sign Up</a>
+{% endblock %}

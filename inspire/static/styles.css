@@ -1,0 +1,90 @@
+.tag {
+    outline-style: solid;
+    margin: 10px;
+}
+
+.tag-x {
+    cursor: pointer;
+}
+
+#tags {
+    width: 30%;
+    overflow-wrap: break-word;
+}
+
+h1, #notification-bell {
+    display: inline;
+}
+
+.notifications {
+    float: right;
+    width: 30%;
+}
+
+#notification-bell, #load-notifications {
+    cursor: pointer;
+}
+
+#notification-bell.selected {
+    color: cadetblue;
+}
+
+.notification-popup {
+    position:absolute;
+    margin-top: 20px;
+    display: none;
+    border-color: black;
+    border-width: 2px;
+    border-style: solid;
+    width: 25%;
+    overflow: scroll;
+    max-height: 30%;
+}
+
+.hidden {
+    display: none;
+}
+
+#speech-video {
+    width: 70%;
+    height: 40%;
+}
+
+#posts {
+    display: grid;
+    max-width: 90%;
+    height: fit-content;
+}
+
+.post {
+    border-width: 2px;
+    border-style: solid;
+    border-color: black;
+    margin: 5%;
+}
+
+#speech-video {
+    margin: 10%;
+}
+
+@media (min-width: 800px) {
+    #posts { grid-template-columns: repeat(2, 1fr); }
+}
+
+#article-text {
+    width: 100%;
+    height: 500px;
+}
+
+#movie-image {
+    width: 30%;
+    height: 50%;
+}
+
+.post-header * {
+    display: inline;
+}
+
+.post-like {
+    float: right;
+}

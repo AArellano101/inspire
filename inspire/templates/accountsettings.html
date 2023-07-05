@@ -1,0 +1,56 @@
+{% extends "account.html" %}
+
+{% block account %}
+
+<h3>Settings</h3>
+
+<form action="/account/settings" method="post" autocomplete="off">
+    {% csrf_token %}
+    <input hidden name="form-id" value="new-username">
+    <b>Set New Username</b>
+    <br>
+    <input name="username" placeholder="New Username">
+    <br>
+    <input name="confirm-username" placeholder="Confirm New Username">
+    <br>
+    <input type="submit" value="Set new Username">
+</form>
+{{ usermessage }}
+<br>
+<form action="/account/settings" method="post" autocomplete="off">
+    {% csrf_token %}
+    <input hidden name="form-id" value="new-email">
+    <b>Set New Email</b>
+    <br>
+    <input name="email" placeholder="New Email">
+    <br>
+    <input name="confirm-email" placeholder="Confirm New Email">
+    <br>
+    <input type="submit" value="Set new Email">
+</form>
+{{ emailmessage }}
+<br>
+<form action="/account/settings" method="post" autocomplete="off">
+    {% csrf_token %}
+    <input hidden name="form-id" value="new-pw">
+    <b>Set New Password</b>
+    <br>
+    <input name="current-pw" placeholder="Current Password" type="password">
+    <br>
+    <input name="pw" placeholder="New Password" type="password">
+    <br>
+    <input name="confirm-pw" placeholder="Confirm New Password" type="password">
+    <br>
+    <input type="submit" value="Set new Password">
+</form>
+{{ pwmessage }}
+<br>
+<form action="/account/settings" method="post" autocomplete="off">
+    {% csrf_token %}
+    <input hidden name="form-id" value="delete-account">
+    <b>Delete Account</b>
+    <br>
+    <input type="submit" value="Delete Account">
+</form>
+
+{% endblock %}

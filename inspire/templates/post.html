@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% load tag_extras %}
+
+{% block body %}
+
+<div id="post"> 
+    <div class="post" id="{{ post.postid }}" data-postid="{{ post.postid }}">
+        <div class="post-header">
+            <h3 id="post-title">{{ post.title }}</h3>
+            <div class="post-like" id="{{post.category}}-like-{{ post.postid }}">
+                {% if liked|keyvalue:post.postid %}
+                <span class="like-icon" data-like="liked">Unlike</span>
+                {% else %}
+                <span class="like-icon" data-like="unliked">Like</span>
+                {% endif %}
+            </div>
+        </div>
+        <div id="post-text">{{ post.text }}</div>
+
+
+        <div id="post-description">{{ post.description }}</div>
+        <div id="post-tags">
+            {% for tag in post.tags %}
+            <span class="tag">
+                {{ tag }}
+            </span>
+            {% endfor %}
+        </div>
+        <div id="post-date">{{ post.readablecreated }}</div>
+    </div>
+</div>
+
+
+{% endblock %}
