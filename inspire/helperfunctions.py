@@ -133,3 +133,5 @@ def compare(s1, s2):
 
     o1 = countOccurrences(s1)
     o2 = countOccurrences(s2)
+
+    o1 + o2
