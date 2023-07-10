@@ -98,40 +98,52 @@ def get_post(postid):
 
 def load_common_words():
     global commonwords
-    file_path = os.path.join(BASE_DIR, 'inspire/commonwords.txt')
+    file_path = os.path.join(BASE_DIR, 'inspire/static/commonwords.txt')
     with open(file_path) as commonwords_file:
         commonwords = commonwords_file.read().splitlines()
 
-def get_rid_of_common_words(s):
-    global commonwords
-    for word in commonwords:
-        s=s.replace(f' {word} ', '')
-        s=s.replace(f'{word} ', '')
-        s=s.replace(f' {word}', '')
-
-    return s
-
 def compare(s1, s2):
     def countOccurrences(l):
-        global commonwords
-        punc = [".",",","!","?"]
         o = {}
         for w in l:
-            lw = w.lower()
-            for p in punc:
-                lw = lw.replace(p,"")
-            
-            if lw in o and lw not in commonwords:
-                o[lw] += 1
+            if w in o:
+                o[w] += 1
             else:
-                o[lw] = 1
+                o[w] = 1
 
         return o
+    
+    def unique_words(s):
+        global commonwords
+        punc = [".",",","!","?"]
+        s = s.split(' ')
+        for i in range(len(s)):
+            w =  s[i]
+            for p in punc:
+                if p in w:
+                    w = w.replace(p, "")   
+            w = w.lower()
+            s[i] = w
 
-    s1 = s1.split(' ')
-    s2 = s2.split(' ')
+        for common_word in commonwords:
+            if common_word in s:
+                s = list(filter((common_word).__ne__, s))
+                
+        return s
+    
+    score = 0
+
+    s1 = unique_words(s1)
+    s2 = unique_words(s2)
+    
+    shared = list(set(s1) & set(s2))
 
     o1 = countOccurrences(s1)
     o2 = countOccurrences(s2)
-
-    o1 + o2
+    
+    score += len(shared) * 100
+    
+    for word in shared:
+        score += o1[word] + o2[word]
+    
+    return score
