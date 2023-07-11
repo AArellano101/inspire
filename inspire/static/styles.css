@@ -45,12 +45,13 @@ h1, #notification-bell {
     display: none;
 }
 
-#speech-video {
+.post-video {
     width: 70%;
     height: 40%;
+    margin: 10%;
 }
 
-#posts {
+.posts {
     display: grid;
     max-width: 90%;
     height: fit-content;
@@ -63,17 +64,19 @@ h1, #notification-bell {
     margin: 5%;
 }
 
-#speech-video {
-    margin: 10%;
-}
-
 @media (min-width: 800px) {
-    #posts { grid-template-columns: repeat(2, 1fr); }
+    .posts { grid-template-columns: repeat(2, 1fr); }
 }
 
 #article-text {
     width: 100%;
     height: 500px;
+}
+
+#article-text-reduced {
+    width: 90%;
+    height: 1000px;
+    margin: 5%;
 }
 
 #movie-image {
@@ -87,4 +90,8 @@ h1, #notification-bell {
 
 .post-like {
     float: right;
+}
+
+.post-container-related {
+    margin: 5%;
 }

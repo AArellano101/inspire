@@ -484,8 +484,13 @@ def post(request, postid):
     if request.method == "GET":
         if request.user.is_authenticated:
             post = get_post(postid)
-            liked = get_liked(request.user, [post])
-            return render(request, "post.html", {"user": request.user, "post": post, "liked": liked})
+            re = similar_posts(postid)
+            related = [get_post(r) for r in re]
+            liked = get_liked(request.user, [post] + related)
+            print(related)
+            print(liked)
+            return render(request, "post.html", {"user": request.user, 
+                        "post": post, "liked": liked, "related": related})
         else:
             return redirect("/login")
     elif request.method == "PUT":

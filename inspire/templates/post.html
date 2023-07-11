@@ -6,7 +6,7 @@
 <div id="post"> 
     <div class="post" id="{{ post.postid }}" data-postid="{{ post.postid }}">
         <div class="post-header">
-            <h3 id="post-title">{{ post.title }}</h3>
+            <h3 class="post-title">{{ post.title }}</h3>
             <div class="post-like" id="{{post.category}}-like-{{ post.postid }}">
                 {% if liked|keyvalue:post.postid %}
                 <span class="like-icon" data-like="liked">Unlike</span>
@@ -15,10 +15,26 @@
                 {% endif %}
             </div>
         </div>
+        {% if post.category == "quote" %}
         <div id="post-text">{{ post.text }}</div>
-
-
         <div id="post-description">{{ post.description }}</div>
+        {% elif post.category == "speech" %}
+        <div class="post-video">
+            <div class="player-container">
+                <div class="plyr__video-embed js-player" id="player-{{ post.postid }}">
+                    <iframe src="{{ post.src }}" allowfullscreen rel="0" id="speech-video-player"></iframe>
+                </div>
+            </div>  
+        </div>
+        <div id="post-description">{{ post.description }}</div>
+        {% elif post.category == "article" %}
+        <div id="post-description">{{ post.description }}</div>
+        <iframe src="{{ post.text }}" id="article-text-reduced"></iframe>
+        {% elif post.category == "movie" or post.category == "album" %}
+        <div id="post-description">{{ post.text }}</div>
+        <image id="movie-image" src="{{ post.image }}"></image>
+        {% endif %}
+        
         <div id="post-tags">
             {% for tag in post.tags %}
             <span class="tag">
@@ -30,5 +46,60 @@
     </div>
 </div>
 
+<div class="post-container-related">
+    <h2>Related</h2>
+    <div class="posts" id="related-posts">
+        {% for rpost in related %}
+        <div class="post" id="{{ rpost.category }}-{{ rpost.postid }}" data-postid="{{ rpost.postid }}">
+            <div class="post-header">
+                <h3 class="rpost-title">{{ rpost.title }}</h3>
+                <div class="post-like" id="{{rpost.category}}-like-{{ rpost.postid }}">
+                    {% if liked|keyvalue:rpost.postid %}
+                    <span class="like-icon" data-like="liked">Unlike</span>
+                    {% else %}
+                    <span class="like-icon" data-like="unliked">Like</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="post-body-redirect" data-postid="{{ rpost.postid }}">
+                {% if rpost.category == "quote" %}
+                <div id="rpost-text">{{ rpost.text }}</div>
+                <div id="rpost-description">{{ rpost.description }}</div>
+                {% elif rpost.category == "speech" %}
+                <div class="post-video">
+                    <div class="player-container">
+                        <div class="plyr__video-embed js-player" id="player-{{ rpost.postid }}">
+                            <iframe src="{{ rpost.src }}" allowfullscreen rel="0" id="speech-video-player"></iframe>
+                        </div>
+                    </div>  
+                </div>
+                <div id="rpost-description">{{ rpost.description }}</div>
+                {% elif rpost.category == "article" %}
+                <div id="rpost-description">{{ rpost.description }}</div>
+                <iframe src="{{ rpost.text }}" id="article-text-reduced"></iframe>
+                {% elif rpost.category == "movie" or rpost.category == "album" %}
+                <div id="rpost-description">{{ rpost.text }}</div>
+                <image id="movie-image" src="{{ rpost.image }}"></image>
+                {% endif %}
+            </div>
+
+            <div id="rpost-tags">
+                {% for tag in rpost.tags %}
+                <span class="tag">
+                    {{ tag }}
+                </span>
+                {% endfor %}
+            </div>
+            <div id="rpost-date">{{ rpost.readablecreated }}</div>    
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script src="https://cdn.plyr.io/3.6.2/plyr.js"></script>
+<script>
+    const players = Array.from(document.querySelectorAll('.js-player')).map((p) => new Plyr(p));
+</script> 
 
 {% endblock %}
