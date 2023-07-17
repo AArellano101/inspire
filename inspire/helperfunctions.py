@@ -2,6 +2,7 @@ import os
 from random import randint
 from .models import *
 from inspire_project.settings import BASE_DIR
+from django.forms.models import model_to_dict
 
 commonwords = []
 
@@ -11,7 +12,6 @@ def notify(user, notification):
     n.save()
 
     InspireUser.objects.add_notification(user, n.id)
-
 
 def text_or_video(category):
     if category == "quote":
@@ -107,6 +107,11 @@ def get_post(postid):
         return post[0]
 
     return None
+
+def get_posts(postids, d=False):
+    if not d:
+        return [get_post(p) for p in postids]
+    return [model_to_dict(get_post(p)) for p in postids]
 
 
 def load_common_words():

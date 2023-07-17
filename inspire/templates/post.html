@@ -3,8 +3,122 @@
 
 {% block body %}
 
-<div id="post"> 
-    <div class="post" id="{{ post.postid }}" data-postid="{{ post.postid }}">
+<script src="https://cdn.plyr.io/3.6.2/plyr.js"></script>
+
+<script>
+    const postInterval = 2;
+    let postids = JSON.parse('{{ postids|safe }}')
+
+    let expandRela = async () => {
+        let sPIs = ""
+        for (const p of postids) {
+            sPIs += p + '-'
+        }
+        await fetch(`/jsondata/related/${sPIs}/${postInterval}/${$('#main-post').attr('data-postid')}`)
+            .then(response => response.json())
+            .then(response => {
+                
+                const related = response['re']
+                const liked = response['li']
+
+                if (related.length == 0) {
+                    $('#load-more').remove()
+                }
+
+                for (const re of related) {
+                    let cat = re['category']
+                    let pid = re['postid']
+
+                    postids.push(re['postid'])
+
+                    let related_post = $('<div></div>').addClass('post')
+                    .attr('id', cat+'-'+pid)
+                    .attr('data-postid', pid)
+
+                    let header = $('<div></div>').addClass('post-header')
+                    let title = $('<h3></h3>').addClass('rpost-title').html(re['title'])
+
+                    let likeId = cat+'-like-'+pid
+                    let like = $('<div></div>').addClass('post-like')
+                    .attr('id', likeId)
+                    
+                    let licon = $('<span></span>').addClass('like-icon')
+                    .click(function () {
+                        setLike(likeId)
+                    })
+
+                    if (liked[pid]) {
+                        licon.attr('data-like', 'liked')
+                        licon.html('Unlike')
+                    } else {
+                        licon.attr('data-like', 'unliked')
+                        licon.html('Like')
+                    }
+                    like.append(licon)
+
+                    header.append(title)
+                    header.append(like)
+
+                    let body = $('<div></div>').addClass('post-body-redirect')
+                    .attr('data-postid', pid)
+                    .click(function () {
+                        window.location = `/post/${re['postid']}`
+                    })
+
+                    
+                    let description = $(`<div>${re['description']}</div>`).addClass('post-description')
+                    if (cat == 'quote') {
+                        body.append($(`<div>${re['text']}</div>`).addClass('post-text'))
+                        body.append(description)
+                    } 
+                    else if (cat == 'speech') {
+                        body.append(
+                            $('<div></div>').addClass('post-video')
+                            .html(
+                                $('<img>').addClass('thumbnail')
+                                .attr('src', re['image'])
+                            )
+                        )
+                        body.append(description)
+                    }
+                    else if (cat == 'article') {
+                        body.append(description)
+                        body.append(
+                            $('<iframe></iframe>').addClass('article-text-reduced')
+                            .attr('src', re['text'])
+                        )
+                    } else if (cat == 'movie' || cat == 'album') {
+                        body.append(description)
+                        body.append(
+                            $('<image></image>').addClass('movie-image')
+                            .attr('src', re['image'])
+                        )
+                    }
+
+                    let tags = $('<div></div>').addClass('rpost-tags')
+                    for (const rtag of re['tags']) {
+                        tags.append(
+                            $('<span></span>').addClass('tag')
+                            .html(rtag)
+                        )
+                    }
+
+                    let date = $('<div></div>').addClass('rpost-date')
+                    .html(re['readablecreated'])
+
+                    related_post.append(header)
+                    related_post.append(body)
+                    related_post.append(tags)
+                    related_post.append(date)
+
+                    $('#related-posts').append(related_post)
+                }
+            })
+    }
+</script>
+
+<div id="post">
+    <div class="post" id="main-post" data-postid="{{ post.postid }}">
         <div class="post-header">
             <h3 class="post-title">{{ post.title }}</h3>
             <div class="post-like" id="{{post.category}}-like-{{ post.postid }}">
@@ -16,33 +130,36 @@
             </div>
         </div>
         {% if post.category == "quote" %}
-        <div id="post-text">{{ post.text }}</div>
-        <div id="post-description">{{ post.description }}</div>
+        <div class="post-text">{{ post.text }}</div>
+        <div class="post-description">{{ post.description }}</div>
         {% elif post.category == "speech" %}
         <div class="post-video">
             <div class="player-container">
                 <div class="plyr__video-embed js-player" id="player-{{ post.postid }}">
                     <iframe src="{{ post.src }}" allowfullscreen rel="0" id="speech-video-player"></iframe>
                 </div>
-            </div>  
+            </div>
+            <script>
+                const player = new Plyr('.js-player');
+            </script>
         </div>
-        <div id="post-description">{{ post.description }}</div>
+        <div class="post-description">{{ post.description }}</div>
         {% elif post.category == "article" %}
-        <div id="post-description">{{ post.description }}</div>
-        <iframe src="{{ post.text }}" id="article-text-reduced"></iframe>
+        <div class="post-description">{{ post.description }}</div>
+        <iframe src="{{ post.text }}" class="article-text-reduced"></iframe>
         {% elif post.category == "movie" or post.category == "album" %}
-        <div id="post-description">{{ post.text }}</div>
-        <image id="movie-image" src="{{ post.image }}"></image>
+        <div class="post-description">{{ post.text }}</div>
+        <image class="movie-image" src="{{ post.image }}"></image>
         {% endif %}
-        
-        <div id="post-tags">
+
+        <div class="post-tags">
             {% for tag in post.tags %}
             <span class="tag">
                 {{ tag }}
             </span>
             {% endfor %}
         </div>
-        <div id="post-date">{{ post.readablecreated }}</div>
+        <div class="post-date">{{ post.readablecreated }}</div>
     </div>
 </div>
 
@@ -64,42 +181,34 @@
 
             <div class="post-body-redirect" data-postid="{{ rpost.postid }}">
                 {% if rpost.category == "quote" %}
-                <div id="rpost-text">{{ rpost.text }}</div>
-                <div id="rpost-description">{{ rpost.description }}</div>
+                <div class="rpost-text">{{ rpost.text }}</div>
+                <div class="rpost-description">{{ rpost.description }}</div>
                 {% elif rpost.category == "speech" %}
                 <div class="post-video">
-                    <div class="player-container">
-                        <div class="plyr__video-embed js-player" id="player-{{ rpost.postid }}">
-                            <iframe src="{{ rpost.src }}" allowfullscreen rel="0" id="speech-video-player"></iframe>
-                        </div>
-                    </div>  
+                    <img class="thumbnail" src="{{ rpost.image }}">  
                 </div>
-                <div id="rpost-description">{{ rpost.description }}</div>
+                <div class="rpost-description">{{ rpost.description }}</div>
                 {% elif rpost.category == "article" %}
-                <div id="rpost-description">{{ rpost.description }}</div>
-                <iframe src="{{ rpost.text }}" id="article-text-reduced"></iframe>
+                <div class="rpost-description">{{ rpost.description }}</div>
+                <iframe src="{{ rpost.text }}" class="article-text-reduced"></iframe>
                 {% elif rpost.category == "movie" or rpost.category == "album" %}
-                <div id="rpost-description">{{ rpost.text }}</div>
-                <image id="movie-image" src="{{ rpost.image }}"></image>
+                <div class="rpost-description">{{ rpost.text }}</div>
+                <image class="movie-image" src="{{ rpost.image }}"></image>
                 {% endif %}
             </div>
 
-            <div id="rpost-tags">
+            <div class="rpost-tags">
                 {% for tag in rpost.tags %}
                 <span class="tag">
                     {{ tag }}
                 </span>
                 {% endfor %}
             </div>
-            <div id="rpost-date">{{ rpost.readablecreated }}</div>    
+            <div class="rpost-date">{{ rpost.readablecreated }}</div>
         </div>
         {% endfor %}
     </div>
+    <button onclick=expandRela() id="load-more">Load More</button>
 </div>
-
-<script src="https://cdn.plyr.io/3.6.2/plyr.js"></script>
-<script>
-    const players = Array.from(document.querySelectorAll('.js-player')).map((p) => new Plyr(p));
-</script> 
 
 {% endblock %}

@@ -460,13 +460,14 @@ def staffpost(request, ptype):
         elif ptype == "video":
             src = request.POST.get("src")
             platform = request.POST.get("platform")
+            image = request.POST.get("image")
 
-            video = Video.objects.create_video(title, tags, category, description, src, platform)
+            video = Video.objects.create_video(title, tags, category, description, src, platform, image)
             video.save()
         
         return render(request, "staffpost.html", {"ptype": ptype})
     
-def jsondata(request, data, minlimit, maxlimit):
+def jsondata(request, data, minlimit=0, maxlimit=1, avoid="", maxPost=0, postid=""):
     if request.method == "GET":
         if request.user.is_authenticated:
             if data == "notifications":
@@ -477,6 +478,13 @@ def jsondata(request, data, minlimit, maxlimit):
                     jsonnotis.append((noti.noti, noti.sent.date()))
 
                 return JsonResponse(jsonnotis, safe=False)
+            elif data == "related":
+                pavoid = avoid.split('-')[:-1]
+                
+                updated_liked = get_liked(request.user, get_posts(similar_posts(postid, pavoid, maxPost)))
+                updated_related = get_posts(similar_posts(postid, pavoid, maxPost), d=True)
+                return JsonResponse({"re": updated_related, "li":updated_liked})
+        
         else:
             return HttpResponseForbidden()
         
@@ -484,13 +492,14 @@ def post(request, postid):
     if request.method == "GET":
         if request.user.is_authenticated:
             post = get_post(postid)
-            re = similar_posts(postid)
-            related = [get_post(r) for r in re]
+            related = get_posts(similar_posts(postid, num=0))
             liked = get_liked(request.user, [post] + related)
-            print(related)
-            print(liked)
+            
+            postids = [post.postid] + [r.postid for r in related]
+            
             return render(request, "post.html", {"user": request.user, 
-                        "post": post, "liked": liked, "related": related})
+                        "post": post, "liked": liked, "related": related,
+                        "postids": json.dumps(postids)})
         else:
             return redirect("/login")
     elif request.method == "PUT":

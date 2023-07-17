@@ -13,6 +13,7 @@ urlpatterns = [
     path("account/settings", views.accountsettings, name="accountsettings"),
     path("staff", views.staff, name="staff"),
     path("staff/post/<slug:ptype>", views.staffpost, name="staffpost"),
-    path("jsondata/<slug:data>/<int:minlimit>/<int:maxlimit>", views.jsondata, name="jsondata"),
+    path("jsondata/<slug:data>/<int:minlimit>/<int:maxlimit>", views.jsondata, name="jsondatanoti"),
+    path("jsondata/<slug:data>/<slug:avoid>/<int:maxPost>/<slug:postid>", views.jsondata, name="jsondatarelated"),
     path("post/<slug:postid>", views.post, name="post"),
 ]

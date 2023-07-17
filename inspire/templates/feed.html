@@ -51,15 +51,7 @@
         <div class="post-body-redirect" data-postid="{{ posts.speech.postid }}">
             <div id="speech-title">{{ posts.speech.title }}</div>
             <div class="post-video">
-                <div class="player-container">
-                    <div class="plyr__video-embed" id="player">
-                        <iframe src="{{ posts.speech.src }}" allowfullscreen rel="0" id="speech-video-player"></iframe>
-                    </div>
-                </div>
-                <script src="https://cdn.plyr.io/3.6.2/plyr.js"></script>
-                <script>
-                    const player = new Plyr('#player');
-                </script>    
+                <img class="thumbnail" src="{{ posts.speech.image }}">  
             </div>
             <div id="speech-description">{{ posts.speech.description }}</div>
         </div>

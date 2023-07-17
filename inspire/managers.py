@@ -84,11 +84,11 @@ class PostManager(models.Manager):
         text.save()
         return text
     
-    def create_video(self, title, tags, category, description, src, platform):
+    def create_video(self, title, tags, category, description, src, platform, image):
         video = self.create(title=title, tags=tags, 
             created=datetime.now(pytz.utc), category=category, 
             description=description, readablecreated=readable_datetime(datetime.now(pytz.utc)),
-            src=src, platform=platform)
+            src=src, platform=platform, image=image)
         
         while True:
             pid = get_pid(10)
