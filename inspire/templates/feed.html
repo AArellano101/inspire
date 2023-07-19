@@ -33,7 +33,7 @@
             </span>
             {% endfor %}
         </div>
-        <div id="quote-date">{{ posts.quote.readablecreated }}</div>
+        <div id="quote-date" class="post-date">{{ posts.quote.readablecreated }}</div>
     </div>
 
     <div class="post" id="speech-{{ posts.speech.postid }}" data-postid="{{ posts.speech.postid }}">
@@ -63,7 +63,7 @@
             </span>
             {% endfor %}
         </div>
-        <div id="speech-date">{{ posts.speech.readablecreated }}</div>
+        <div class="post-date" id="speech-date">{{ posts.speech.readablecreated }}</div>
     </div>
 
     <div class="post" id="article-{{ posts.article.postid }}" data-postid="{{ posts.article.postid }}">
@@ -89,7 +89,7 @@
             </span>
             {% endfor %}
         </div>
-        <div id="article-date">{{ posts.article.readablecreated }}</div>
+        <div class="post-date" id="article-date">{{ posts.article.readablecreated }}</div>
     </div>
 
     <div class="post-container" id="misc">
@@ -116,7 +116,7 @@
                 </span>
                 {% endfor %}
             </div>
-            <div id="movie-date">{{ posts.movie.readablecreated }}</div>
+            <div class="post-date" id="movie-date">{{ posts.movie.readablecreated }}</div>
         </div>
 
         <div class="post" id="album-{{ posts.album.postid }}" data-postid="{{ posts.album.postid }}">
@@ -142,7 +142,7 @@
                 </span>
                 {% endfor %}
             </div>
-            <div id="album-date">{{ posts.album.readablecreated }}</div>
+            <div class="post-date" id="album-date">{{ posts.album.readablecreated }}</div>
         </div>
     </div>
 </div>

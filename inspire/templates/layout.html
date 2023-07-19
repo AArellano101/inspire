@@ -88,6 +88,11 @@
                 window.location = `/post/${$(this).attr('data-postid')}`
             })
 
+            $('#search-button').click(function () {
+                let sq = $('#search-input').val().replaceAll(' ','-')
+                window.location = `/search/${sq}`
+            })
+
             $.fn.notificationFade = function () {
                 return this.animate({ opacity: 'toggle', height: 'toggle' }, 'fast')
             }
@@ -101,6 +106,10 @@
         {% if user.is_authenticated %}
         <a href="/feed">Feed</a>
         <a href="/account">Account</a>
+        <div id="search">
+            <input id="search-input" placeholder="Search">
+            <span id="search-button">Go</span>
+        </div>
         <div class="notifications">
             <t class="notification-popup" id="notifications">
                 <a id="load-notifications">Load More</a>

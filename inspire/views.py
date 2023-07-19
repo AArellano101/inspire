@@ -467,7 +467,7 @@ def staffpost(request, ptype):
         
         return render(request, "staffpost.html", {"ptype": ptype})
     
-def jsondata(request, data, minlimit=0, maxlimit=1, avoid="", maxPost=0, postid=""):
+def jsondata(request, data, minlimit=0, maxlimit=1, avoid="", maxPost=0, postid="", query=""):
     if request.method == "GET":
         if request.user.is_authenticated:
             if data == "notifications":
@@ -484,6 +484,12 @@ def jsondata(request, data, minlimit=0, maxlimit=1, avoid="", maxPost=0, postid=
                 updated_liked = get_liked(request.user, get_posts(similar_posts(postid, pavoid, maxPost)))
                 updated_related = get_posts(similar_posts(postid, pavoid, maxPost), d=True)
                 return JsonResponse({"re": updated_related, "li":updated_liked})
+            elif data == "search":
+                pavoid = avoid.split('-')[:-1]
+                query = query.replace('-', ' ')[:-1]
+                updated_liked = get_liked(request.user, get_posts(searchquery(query, pavoid, maxPost)))
+                updated_results = get_posts(searchquery(query, pavoid, maxPost), d=True)
+                return JsonResponse({"res": updated_results, "li":updated_liked})
         
         else:
             return HttpResponseForbidden()
@@ -500,6 +506,26 @@ def post(request, postid):
             return render(request, "post.html", {"user": request.user, 
                         "post": post, "liked": liked, "related": related,
                         "postids": json.dumps(postids)})
+        else:
+            return redirect("/login")
+    elif request.method == "PUT":
+        body = json.loads(request.body)
+        
+        handle_like(request.user, body)
+
+        return HttpResponse(500)
+    
+def search(request, query):
+    if request.method == "GET":
+        if request.user.is_authenticated:
+            squery = query.replace("-"," ")
+            results = get_posts(searchquery(squery, num=1))
+            liked = get_liked(request.user, results)
+            postids = [r.postid for r in results]
+
+            return render(request, "search.html", {"user": request.user,
+                        "results": results, "liked": liked, "postids": json.dumps(postids), 
+                        "query": query, "squery": squery})
         else:
             return redirect("/login")
     elif request.method == "PUT":

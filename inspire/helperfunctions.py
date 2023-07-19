@@ -208,8 +208,8 @@ def similar_posts(postid, pavoid=[], num=10):
     for d_tag in des_tags:
         db_results_d = cb_set(db_results_d, set(Text.objects.filter(
             description__icontains=d_tag).order_by('-id')[:100]))
-        db_results_t = cb_set(db_results_t, set(Video.objects.filter(
-            description__icontains=t_tag).order_by('-id')[:25]))
+        db_results_d = cb_set(db_results_d, set(Video.objects.filter(
+            description__icontains=d_tag).order_by('-id')[:25]))
 
     db_results_d = list(db_results_d)
     for d in db_results_d:
@@ -239,6 +239,59 @@ def similar_posts(postid, pavoid=[], num=10):
                 if d.postid not in pavoid and d.postid != postid:
                     db_results[d.postid] = compare(post.text, d.text)
 
+
+    db_results = dict(sorted(db_results.items(), key=lambda item: item[1], reverse = True))
+    db_results = list(db_results)[:num]
+
+    return db_results
+
+def searchquery(query, pavoid=[], num=10):
+    q_words = rv_ex(unique_words(query))
+
+    db_results = {}
+
+    db_results_t = set()
+    db_results_d = set()
+    db_results_te = set()
+    
+    for q_word in q_words:
+        db_results_t = cb_set(db_results_t, set(Text.objects.filter(
+            title__icontains=q_word).order_by('-id')[:100]))
+        db_results_t = cb_set(db_results_t, set(Video.objects.filter(
+            title__icontains=q_word).order_by('-id')[:25]))
+        
+        db_results_d = cb_set(db_results_d, set(Text.objects.filter(
+            description__icontains=q_word).order_by('-id')[:100]))
+        db_results_d = cb_set(db_results_d, set(Video.objects.filter(
+            description__icontains=q_word).order_by('-id')[:25]))
+        
+        db_results_te = cb_set(db_results_te, set(Text.objects.filter(
+            text__icontains=q_word).order_by('-id')[:100]))    
+
+    db_results_t = list(db_results_t)
+    for t in db_results_t:
+        if t.postid not in pavoid:
+            db_results[t.postid] = compare(query, t.title)
+    
+    db_results_d = list(db_results_d)
+    for d in db_results_d:
+        if d in db_results:
+            i = compare(query, d.description)
+            if db_results[d] < i:
+                db_results[d] = i
+        else:
+            if d.postid not in pavoid:
+                db_results[d.postid] = compare(query, d.description)
+
+    db_results_te = list(db_results_te)
+    for d in db_results_te:
+        if d in db_results:
+            i = compare(query, d.text)
+            if db_results[d] < i:
+                db_results[d] = i
+        else:
+            if d.postid not in pavoid:
+                db_results[d.postid] = compare(query, d.text)        
 
     db_results = dict(sorted(db_results.items(), key=lambda item: item[1], reverse = True))
     db_results = list(db_results)[:num]
