@@ -37,10 +37,12 @@ class Post(models.Model):
     created = models.DateTimeField()
     tags = ArrayField(models.CharField(max_length=30), blank=True, default=list)
     category = models.CharField(max_length=50)
+    subcategories = ArrayField(models.CharField(max_length=30), default=list)
     description = models.TextField(max_length=1000, null=True)
     featured = models.BooleanField(default=False)
     readablecreated = models.CharField(max_length=50)
     image = models.CharField(max_length=500, null=True)
+    likes = models.PositiveIntegerField(default=0)
     objects = PostManager()
 
     class Meta:

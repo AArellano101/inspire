@@ -70,9 +70,10 @@ class MessageManager(models.Manager):
         return message
     
 class PostManager(models.Manager):
-    def create_text(self, title, tags, category, description, text, image):
+    def create_text(self, title, tags, category, subcategories, description, text, image):
         text = self.create(title=title, tags=tags, 
             created=datetime.now(pytz.utc), category=category, 
+            subcategories=subcategories,
             description=description, text=text, image=image,
             readablecreated=readable_datetime(datetime.now(pytz.utc)))
         
@@ -84,9 +85,10 @@ class PostManager(models.Manager):
         text.save()
         return text
     
-    def create_video(self, title, tags, category, description, src, platform, image):
+    def create_video(self, title, tags, category, subcategories, description, src, platform, image):
         video = self.create(title=title, tags=tags, 
-            created=datetime.now(pytz.utc), category=category, 
+            created=datetime.now(pytz.utc), category=category,
+            subcategories=subcategories, 
             description=description, readablecreated=readable_datetime(datetime.now(pytz.utc)),
             src=src, platform=platform, image=image)
         
@@ -97,6 +99,18 @@ class PostManager(models.Manager):
         video.postid = pid
         video.save()
         return video
+    
+    def like(self, postid):
+        if self.filter(postid=postid).exists():
+            p = self.get(postid=postid)
+            p.likes += 1
+            p.save()
+
+    def unlike(self, postid):
+        if self.filter(postid=postid).exists():
+            p = self.get(postid=postid)
+            p.likes -= 1
+            p.save()
     
 class NotificationManager(models.Manager):
     def create_notification(self, noti):

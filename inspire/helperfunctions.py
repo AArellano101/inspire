@@ -13,6 +13,7 @@ def notify(user, notification):
 
     InspireUser.objects.add_notification(user, n.id)
 
+
 def text_or_video(category):
     if category == "quote":
         return "text"
@@ -24,6 +25,23 @@ def text_or_video(category):
         return "text"
     elif category == "album":
         return "text"
+
+
+def get_categories():
+    cats = {
+        "quote": {
+            "bible-verse": {
+                "old-testament": {},
+                "new-testament": {}
+            }
+        },
+        "speech": {},
+        "article": {},
+        "movie": {},
+        "album": {}
+    }
+
+    return cats
 
 
 def get_featured():
@@ -57,6 +75,12 @@ def get_liked(user, posts):
     return liked
 
 
+def get_num_likes(postid):
+    if Favourite.objects.filter(postid=postid).exists():
+        return Favourite.objects.get(postid=postid).likes
+    return 0
+
+
 def readable_datetime(date):
     months = {1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "June",
               7: "July", 8: "Aug", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dec"}
@@ -80,14 +104,23 @@ def like(user, body):
 
     if f.id not in user.favourites:
         InspireUser.objects.add_favourite(user, f.id)
+        if text_or_video(category) == "text":
+            Text.objects.like(id)
+        else:
+            Video.objects.like(id)
 
 
 def unlike(user, body):
     category = body["category"]
     id = body["id"]
-    f = Favourite.objects.filter(category=category, postid=id)[0]
+    f = Favourite.objects.filter(category=category, postid=id)
 
-    InspireUser.objects.remove_favourite(user, f.id)
+    if f.exists():
+        InspireUser.objects.remove_favourite(user, f[0].id)
+        if text_or_video(category) == "text":
+            Text.objects.unlike(id)
+        else:
+            Video.objects.unlike(id)
 
 
 def handle_like(user, body):
@@ -107,6 +140,7 @@ def get_post(postid):
         return post[0]
 
     return None
+
 
 def get_posts(postids, d=False):
     if not d:
@@ -177,8 +211,10 @@ def compare(s1, s2):
 def rv_ex(a):
     return list(set(a))
 
-def cb_set(s1,s2):
+
+def cb_set(s1, s2):
     return set(list(s1)+list(s2))
+
 
 def similar_posts(postid, pavoid=[], num=10):
     post = get_post(postid)
@@ -198,13 +234,14 @@ def similar_posts(postid, pavoid=[], num=10):
             title__icontains=t_tag).order_by('-id')[:100]))
         db_results_t = cb_set(db_results_t, set(Video.objects.filter(
             title__icontains=t_tag).order_by('-id')[:25]))
-    
+
     db_results_t = list(db_results_t)
     for t in db_results_t:
         if t.postid not in pavoid and t.postid != postid:
             db_results[t.postid] = compare(post.title, t.title)
-        
+
     db_results_d = set()
+
     for d_tag in des_tags:
         db_results_d = cb_set(db_results_d, set(Text.objects.filter(
             description__icontains=d_tag).order_by('-id')[:100]))
@@ -215,12 +252,11 @@ def similar_posts(postid, pavoid=[], num=10):
     for d in db_results_d:
         if d in db_results:
             i = compare(post.description, d.description)
-            if db_results[d] < i:
-                db_results[d] = i
+            if db_results[d.postid] < i:
+                db_results[d.postid] = i
         else:
             if d.postid not in pavoid and d.postid != postid:
                 db_results[d.postid] = compare(post.description, d.description)
-
 
     if ptype == "text":
         text_tags = rv_ex(unique_words(post.text))
@@ -233,17 +269,18 @@ def similar_posts(postid, pavoid=[], num=10):
         for d in db_results_te:
             if d in db_results:
                 i = compare(post.text, d.text)
-                if db_results[d] < i:
-                    db_results[d] = i
+                if db_results[d.postid] < i:
+                    db_results[d.postid] = i
             else:
                 if d.postid not in pavoid and d.postid != postid:
                     db_results[d.postid] = compare(post.text, d.text)
 
-
-    db_results = dict(sorted(db_results.items(), key=lambda item: item[1], reverse = True))
+    db_results = dict(
+        sorted(db_results.items(), key=lambda item: item[1], reverse=True))
     db_results = list(db_results)[:num]
 
     return db_results
+
 
 def searchquery(query, pavoid=[], num=10):
     q_words = rv_ex(unique_words(query))
@@ -253,32 +290,32 @@ def searchquery(query, pavoid=[], num=10):
     db_results_t = set()
     db_results_d = set()
     db_results_te = set()
-    
+
     for q_word in q_words:
         db_results_t = cb_set(db_results_t, set(Text.objects.filter(
             title__icontains=q_word).order_by('-id')[:100]))
         db_results_t = cb_set(db_results_t, set(Video.objects.filter(
             title__icontains=q_word).order_by('-id')[:25]))
-        
+
         db_results_d = cb_set(db_results_d, set(Text.objects.filter(
             description__icontains=q_word).order_by('-id')[:100]))
         db_results_d = cb_set(db_results_d, set(Video.objects.filter(
             description__icontains=q_word).order_by('-id')[:25]))
-        
+
         db_results_te = cb_set(db_results_te, set(Text.objects.filter(
-            text__icontains=q_word).order_by('-id')[:100]))    
+            text__icontains=q_word).order_by('-id')[:100]))
 
     db_results_t = list(db_results_t)
     for t in db_results_t:
         if t.postid not in pavoid:
             db_results[t.postid] = compare(query, t.title)
-    
+
     db_results_d = list(db_results_d)
     for d in db_results_d:
         if d in db_results:
             i = compare(query, d.description)
-            if db_results[d] < i:
-                db_results[d] = i
+            if db_results[d.postid] < i:
+                db_results[d.postid] = i
         else:
             if d.postid not in pavoid:
                 db_results[d.postid] = compare(query, d.description)
@@ -287,13 +324,113 @@ def searchquery(query, pavoid=[], num=10):
     for d in db_results_te:
         if d in db_results:
             i = compare(query, d.text)
-            if db_results[d] < i:
-                db_results[d] = i
+            if db_results[d.postid] < i:
+                db_results[d.postid] = i
         else:
             if d.postid not in pavoid:
-                db_results[d.postid] = compare(query, d.text)        
+                db_results[d.postid] = compare(query, d.text)
 
-    db_results = dict(sorted(db_results.items(), key=lambda item: item[1], reverse = True))
+    db_results = dict(
+        sorted(db_results.items(), key=lambda item: item[1], reverse=True))
     db_results = list(db_results)[:num]
 
+    return db_results
+
+
+def tagquery(tag, pavoid=[], num=10):
+    db_results = {}
+
+    db_results_r = set(Text.objects.filter(
+        tags__contains=[tag]).order_by('-likes')[:100])
+    db_results_r = cb_set(db_results_r, set(Video.objects.filter(
+        tags__contains=[tag]).order_by('-likes')[:25]))
+
+    db_results_r = list(db_results_r)
+    for r in db_results_r:
+        if r.postid not in pavoid:
+            db_results[r.postid] = r.likes
+
+    db_results = dict(
+        sorted(db_results.items(), key=lambda item: item[1], reverse=True))
+    db_results = list(db_results)[:num]
+    return db_results
+
+
+def catquery(cat, sc=False, q='likes', pavoid=[], num=10):
+    if q == 'likes':
+        q = '-likes'
+    elif q == 'newest':
+        q = '-created'
+    elif q == 'oldest':
+        q = 'created'
+    elif q == 'random':
+        q = '?'
+
+    db_results = {}
+    if not sc:
+        db_results_r = set(Text.objects.filter(category=cat).order_by(q)[:100])
+        db_results_r = cb_set(db_results_r, set(Video.objects.filter(category=cat)
+                                                .order_by(q)[:25]))
+    else:
+        db_results_r = set(Text.objects.filter(
+            subcategories__contains=[cat]).order_by(q)[:100])
+        db_results_r = cb_set(db_results_r, set(Video.objects.filter(
+            subcategories__contains=[cat]).order_by(q)[:25]))
+
+    db_results_r = list(db_results_r)
+
+    for r in db_results_r:
+        if r.postid not in pavoid:
+            if q == '-likes':
+                db_results[r.postid] = r.likes
+            elif q == '-created' or q == 'created':
+                db_results[r.postid] = r.created
+            elif q == '?':
+                db_results[r.postid] = randint(0, 1000)
+
+    if q in ['-likes', '-created', 'created', '?']:
+        if q == '-likes' or q == '-created' or q == '?':
+            db_results = dict(
+                sorted(db_results.items(), key=lambda item: item[1], reverse=True))
+        elif q == 'created':
+            db_results = dict(
+                sorted(db_results.items(), key=lambda item: item[1]))
+
+    db_results = list(db_results)[:num]
+    return db_results
+
+
+def allquery(q='likes', pavoid=[], num=10):
+    if q == 'likes':
+        q = '-likes'
+    elif q == 'newest':
+        q = '-created'
+    elif q == 'oldest':
+        q = 'created'
+    elif q == 'random':
+        q = '?'
+
+    db_results = {}
+    db_results_r = set(Text.objects.all().order_by(q)[:100])
+    db_results_r = cb_set(db_results_r, set(Video.objects.all()
+                                            .order_by(q)[:25]))
+    db_results_r = list(db_results_r)
+    for r in db_results_r:
+        if r.postid not in pavoid:
+            if q == '-likes':
+                db_results[r.postid] = r.likes
+            elif q == '-created' or q == 'created':
+                db_results[r.postid] = r.created
+            elif q == '?':
+                db_results[r.postid] = randint(0, 1000)
+
+    if q in ['-likes', '-created', 'created', '?']:
+        if q == '-likes' or q == '-created' or q == '?':
+            db_results = dict(
+                sorted(db_results.items(), key=lambda item: item[1], reverse=True))
+        elif q == 'created':
+            db_results = dict(
+                sorted(db_results.items(), key=lambda item: item[1]))
+
+    db_results = list(db_results)[:num]
     return db_results

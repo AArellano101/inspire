@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
@@ -15,7 +15,11 @@ urlpatterns = [
     path("staff/post/<slug:ptype>", views.staffpost, name="staffpost"),
     path("jsondata/<slug:data>/<int:minlimit>/<int:maxlimit>", views.jsondata, name="jsondatanoti"),
     path("jsondata/<slug:data>/<slug:avoid>/<int:maxPost>/<slug:postid>", views.jsondata, name="jsondatarelated"),
-    path("jsondata/<slug:data>/<slug:avoid>/<slug:query>/<int:maxPost>", views.jsondata, name="jsondatasearch"),
+    path("jsondata/<slug:data>/<slug:avoid>/<slug:query>/<int:maxPost>", views.jsondata, name="jsondataresults"),
+    path("jsondata/<slug:data>/<slug:avoid>/<slug:query>/<int:maxPost>/<slug:cattype>/<slug:catorder>", views.jsondata, name="jsondatacats"),
     path("post/<slug:postid>", views.post, name="post"),
     path("search/<slug:query>", views.search, name="search"),
+    path("tag/<slug:qtag>", views.tag, name="tag"),
+    path("category", views.categories, name="categories"),
+    re_path(r"^category/(?P<path>.*)/$", views.categories, name="categories"),
 ]

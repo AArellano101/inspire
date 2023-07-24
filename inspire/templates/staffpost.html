@@ -3,23 +3,23 @@
 {% block staff %}
 <script>
     $(() => {
-        $('#add-tags').keyup(function(event) {
+        $('#add-tags').keyup(function (event) {
             if (event.which == 32) {
                 let vals = $(this).val().split(' ')
                 let val = vals[vals.length - 2]
-                
+
                 if (val && val.length <= 30) {
                     let valspan = $(`<span>${val}</span>`)
 
                     let x = $('<span>x</span>')
-                    .attr({class:'tag-x', id:`${val}-x`})
-                    .click(function() {
-                        let id = $(this).attr("id").replace('-x','')
-                        $(`#${id}`).remove()
-                    })
+                        .attr({ class: 'tag-x', id: `${val}-x` })
+                        .click(function () {
+                            let id = $(this).attr("id").replace('-x', '')
+                            $(`#${id}`).remove()
+                        })
 
                     let span = $('<span></span>')
-                    .attr({class: 'tag', id:`${val}`})
+                        .attr({ class: 'tag', id: `${val}` })
 
                     span.append(valspan)
                     span.append(x)
@@ -31,16 +31,48 @@
             }
         })
 
-        $('.tag-x').click(function() {
-            let id = $(this).attr("id").replace('-x','')
-            $(id).remove()
+        $('#add-subcats').click(function (event) {
+            let val = $('#input-subcats').val()
+            let dVal = val.replaceAll(' ', '-').toLowerCase()
+
+            if (val && val.length <= 30) {
+                let valspan = $(`<span>${val}</span>`)
+
+                let x = $('<span>x</span>')
+                    .attr({ class: 'subcat-x', id: `${dVal}-xsc` })
+                    .click(function () {
+                        let id = $(this).attr("id").replace('-xsc', '-sc')
+
+                        $(`#${dVal}-sc`).remove()
+                    })
+
+                let span = $('<span></span>')
+                    .attr({ class: 'subcat', id: `${dVal}-sc` })
+                    .data('sc', dVal)
+
+                span.append(valspan)
+                span.append(' ')
+                span.append(x)
+                span.append('->')
+
+                $('#subcats').append(span)
+            }
+
+            $('#input-subcats').val('');
         })
 
-        $('#form').submit(function() {
+        $('#form').submit(function () {
             let tags = ""
-            $('#tags .tag').each(function(tag){
+            $('#tags .tag').each(function () {
                 tags += $(this).attr('id') + ' '
                 $('#hidden-tags').val(tags)
+            })
+
+            let subcats = ""
+
+            $('#subcats .subcat').each(function () {
+                subcats += $(this).data('sc') + ','
+                $('#hidden-subcats').val(subcats)
             })
         })
     })
@@ -64,6 +96,10 @@
         {% endif %}
     </select>
     <br>
+    <div id="subcats"></div>
+    <input placeholder="Add Subcategories" id="input-subcats">
+    <span id="add-subcats">Add Subcategory</span>
+    <br>
     <textarea name="description" cols="40" rows="5" placeholder="Description"></textarea>
     <br>
     {% if ptype == "text" %}
@@ -82,6 +118,7 @@
     </select>
     <br>
     {% endif %}
+    <input name="subcats" id="hidden-subcats" hidden>
     <input name="tags" id="hidden-tags" hidden>
     <br>
     <input type="submit" value="Post">

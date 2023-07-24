@@ -4,10 +4,11 @@
 <html lang="en">
 
 <head>
-    <title>Aaron</title>
+    <title>Inspire</title>
     <link href="{% static 'styles.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.6.2/plyr.css" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.plyr.io/3.6.2/plyr.js"></script>
     <script>
         let authenticated = '{{ user.is_authenticated }}'
         const notiInterval = 5
@@ -93,6 +94,10 @@
                 window.location = `/search/${sq}`
             })
 
+            $('.tag').click(function () {
+                window.location = `/tag/${$(this)[0].innerText}`
+            })
+
             $.fn.notificationFade = function () {
                 return this.animate({ opacity: 'toggle', height: 'toggle' }, 'fast')
             }
@@ -102,10 +107,11 @@
 
 <body>
     <div id="header">
-        <h1>Aaron</h1>
+        <h1>Inspire</h1>
         {% if user.is_authenticated %}
         <a href="/feed">Feed</a>
         <a href="/account">Account</a>
+        <a href="/category">Explore</a>
         <div id="search">
             <input id="search-input" placeholder="Search">
             <span id="search-button">Go</span>

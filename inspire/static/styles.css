@@ -7,6 +7,15 @@
     cursor: pointer;
 }
 
+.subcat {
+    outline-style: solid;
+    margin: 10px;
+}
+
+.subcat-x {
+    cursor: pointer;
+}
+
 #tags {
     width: 30%;
     overflow-wrap: break-word;
@@ -17,8 +26,7 @@ h1, #notification-bell, #search {
 }
 
 #search-input {
-    margin-left: 10%;
-    width: 25%;
+    width: 20%;
 }
 
 .notifications {
@@ -62,6 +70,21 @@ h1, #notification-bell, #search {
     height: fit-content;
 }
 
+.cats {
+    display: grid;
+    height: fit-content;
+}
+
+.cat {
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(51, 51, 51);
+    margin: 5%;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+
 .post {
     border-width: 2px;
     border-style: solid;
@@ -73,6 +96,7 @@ h1, #notification-bell, #search {
 
 @media (min-width: 800px) {
     .posts { grid-template-columns: repeat(2, 1fr); }
+    .cats { grid-template-columns: repeat(4, 1fr); }
 }
 
 .article-text, #article-text {

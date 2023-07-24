@@ -449,25 +449,26 @@ def staffpost(request, ptype):
     elif request.method == "POST":
         title = request.POST.get("title")
         tags = request.POST.get("tags").split(' ')[0:-1]
+        subcats = request.POST.get("subcats").split(',')[0:-1]
         category = request.POST.get("category")
         description = request.POST.get("description")
         if ptype == "text":
             text = request.POST.get("text")
             image = request.POST.get("image")
 
-            text = Text.objects.create_text(title, tags, category, description, text, image)
+            text = Text.objects.create_text(title, tags, category, subcats, description, text, image)
             text.save()
         elif ptype == "video":
             src = request.POST.get("src")
             platform = request.POST.get("platform")
             image = request.POST.get("image")
 
-            video = Video.objects.create_video(title, tags, category, description, src, platform, image)
+            video = Video.objects.create_video(title, tags, category, subcats, description, src, platform, image)
             video.save()
         
         return render(request, "staffpost.html", {"ptype": ptype})
     
-def jsondata(request, data, minlimit=0, maxlimit=1, avoid="", maxPost=0, postid="", query=""):
+def jsondata(request, data, minlimit=0, maxlimit=1, avoid="", maxPost=0, postid="", query="", cattype="", catorder=""):
     if request.method == "GET":
         if request.user.is_authenticated:
             if data == "notifications":
@@ -480,17 +481,35 @@ def jsondata(request, data, minlimit=0, maxlimit=1, avoid="", maxPost=0, postid=
                 return JsonResponse(jsonnotis, safe=False)
             elif data == "related":
                 pavoid = avoid.split('-')[:-1]
-                
-                updated_liked = get_liked(request.user, get_posts(similar_posts(postid, pavoid, maxPost)))
-                updated_related = get_posts(similar_posts(postid, pavoid, maxPost), d=True)
-                return JsonResponse({"re": updated_related, "li":updated_liked})
+                r = similar_posts(postid, pavoid, maxPost)
+                updated_liked = get_liked(request.user, get_posts(r))
+                updated_related = get_posts(r, d=True)
+                return JsonResponse({"res": updated_related, "li":updated_liked})
             elif data == "search":
                 pavoid = avoid.split('-')[:-1]
+                r = searchquery(query, pavoid, maxPost)
                 query = query.replace('-', ' ')[:-1]
-                updated_liked = get_liked(request.user, get_posts(searchquery(query, pavoid, maxPost)))
-                updated_results = get_posts(searchquery(query, pavoid, maxPost), d=True)
+                updated_liked = get_liked(request.user, get_posts(r))
+                updated_results = get_posts(r, d=True)
                 return JsonResponse({"res": updated_results, "li":updated_liked})
-        
+            elif data == "tag":
+                pavoid = avoid.split('-')[:-1]
+                r = tagquery(query, pavoid, maxPost)
+                updated_liked = get_liked(request.user, get_posts(r))
+                updated_results = get_posts(r, d=True)
+                return JsonResponse({"res": updated_results, "li":updated_liked})
+            elif data == "cat":
+                pavoid = avoid.split('-')[:-1]
+
+                if cattype == "all":
+                    r = allquery(catorder, pavoid, maxPost)
+                elif cattype == "cat":
+                    r = catquery(query, q=catorder,pavoid=pavoid, num=maxPost)  
+                elif cattype == "sub":
+                    r = catquery(query, sc=True, q=catorder,pavoid=pavoid, num=maxPost)
+                updated_liked = get_liked(request.user, get_posts(r))
+                updated_results = get_posts(r, d=True)   
+                return JsonResponse({"res": updated_results, "li":updated_liked})
         else:
             return HttpResponseForbidden()
         
@@ -498,14 +517,14 @@ def post(request, postid):
     if request.method == "GET":
         if request.user.is_authenticated:
             post = get_post(postid)
-            related = get_posts(similar_posts(postid, num=0))
+            related = get_posts(similar_posts(postid, num=2))
             liked = get_liked(request.user, [post] + related)
             
             postids = [post.postid] + [r.postid for r in related]
             
             return render(request, "post.html", {"user": request.user, 
-                        "post": post, "liked": liked, "related": related,
-                        "postids": json.dumps(postids)})
+                        "post": post, "liked": liked, "results": related,
+                        "postids": json.dumps(postids), "qtype": "post"})
         else:
             return redirect("/login")
     elif request.method == "PUT":
@@ -519,13 +538,13 @@ def search(request, query):
     if request.method == "GET":
         if request.user.is_authenticated:
             squery = query.replace("-"," ")
-            results = get_posts(searchquery(squery, num=1))
+            postids = searchquery(squery, num=1)
+            results = get_posts(postids)
             liked = get_liked(request.user, results)
-            postids = [r.postid for r in results]
 
             return render(request, "search.html", {"user": request.user,
                         "results": results, "liked": liked, "postids": json.dumps(postids), 
-                        "query": query, "squery": squery})
+                        "query": query, "squery": squery, "qtype": "search"})
         else:
             return redirect("/login")
     elif request.method == "PUT":
@@ -533,4 +552,66 @@ def search(request, query):
         
         handle_like(request.user, body)
 
+        return HttpResponse(500)
+    
+def tag(request, qtag):
+    if request.method == "GET":
+        if request.user.is_authenticated:
+            postids = tagquery(qtag, num=1)
+            results = get_posts(postids)
+            liked = get_liked(request.user, results)
+
+            return render(request, "tag.html", {"user": request.user, 
+                        "results": results, "liked": liked, "postids": json.dumps(postids), 
+                        "tag": qtag, "qtype": "tag"})
+        else:
+            return redirect("/login")
+    elif request.method == "PUT":
+        body = json.loads(request.body)
+        handle_like(request.user, body)
+        return HttpResponse(500)
+    
+def categories(request, path=""): 
+    def catrcat(c):
+        cats = {}
+        c = list(c.keys())
+        for cat in c:
+            cats[cat] = cat.title().replace('-',' ')
+
+        return cats
+
+    if request.method == "GET":
+        paths = path.split('/')
+        if request.user.is_authenticated:
+            cats = get_categories()
+
+            if len(paths[0]):
+                for path in paths:
+                    cats = cats[path]
+
+                if len(paths) == 1:
+                    postids = catquery(paths[-1], num=1)
+                    cat = "cat"
+                else:
+                    postids = catquery(paths[-1], sc=True, num=1)
+                    cat = "sub"
+                qcategory = paths[-1]
+
+            else:
+                postids = allquery()
+                cat = "all"
+                qcategory = "none"
+
+            results = get_posts(postids)
+            liked = get_liked(request.user, results)
+            rcats = catrcat(cats)
+            return render(request, "categories.html", {"user": request.user,
+                    "cats": rcats, "results": results, "liked": liked, 
+                    "postids": json.dumps(postids), "path": paths, "cattype": cat, 
+                    "category": qcategory, "qtype": "cat"})
+        else:
+            return redirect("/login")
+    elif request.method == "PUT":
+        body = json.loads(request.body)
+        handle_like(request.user, body)
         return HttpResponse(500)
