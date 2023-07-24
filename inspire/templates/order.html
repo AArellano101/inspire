@@ -1,0 +1,42 @@
+<script>
+    $(() => {
+        $('#order-by').on('change', async function() {
+            $('#post-results').empty()
+
+            let url
+            if (qtype == 'cat') {
+                url = `/jsondata/cat/-/{{ category }}/${postInterval}/{{ cattype }}/${$('#order-by').val()}`
+            } else if (qtype == 'fav') {
+                url = `/jsondata/fav/-/${postInterval}/${$('#order-by').val()}/fav`
+            }
+            await fetch(url)
+                .then(response => response.json())
+                .then(response => {
+                    postids = []
+
+                    const results = response['res']
+                    const liked = response['li']
+
+                    if (results.length == 0) {
+                        $('#load-more').remove()
+                    }
+
+                    for (const res of results) {
+                        createPost(res, liked)
+                    }
+                })
+        })
+    })
+</script>
+
+<label for="order">Order by: </label>
+<select name="order" id="order-by">
+    {% if qtype == "fav" %}
+    <option value="recentliked">Recently liked</option>
+    <option value="oldestliked">Oldest liked</option>
+    {% endif %}
+    <option value="likes">Likes</option>
+    <option value="newest">Newest</option>
+    <option value="oldest">Oldest</option>
+    <option value="random">Random</option>
+</select>

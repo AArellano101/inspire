@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% load tag_extras %}
+
+{% block body %}
+<h2 id="results-title">
+    Your Favourites
+</h2>
+
+{% include "order.html" %}
+{% include "results.html" %}
+
+{% endblock %}

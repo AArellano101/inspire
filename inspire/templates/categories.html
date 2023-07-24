@@ -13,25 +13,6 @@
                 window.location += `/${$(this).data('category')}`
             }
         })
-
-        $('#order-by').on('change', async function() {
-            $('#post-results').empty()
-
-            await fetch(`/jsondata/cat/-/{{ category }}/${postInterval}/{{ cattype }}/${$('#order-by').val()}`)
-                .then(response => response.json())
-                .then(response => {
-                    const results = response['res']
-                    const liked = response['li']
-
-                    if (results.length == 0) {
-                        $('#load-more').remove()
-                    }
-
-                    for (const res of results) {
-                        createPost(res, liked)
-                    }
-                })
-        })
     })
 </script>
 
@@ -50,14 +31,7 @@
     {% endif %}
 </h2>
 
-<label for="order">Order by: </label>
-<select name="order" id="order-by">
-    <option value="likes">Likes</option>
-    <option value="newest">Newest</option>
-    <option value="oldest">Oldest</option>
-    <option value="random">Random</option>
-</select>
-
+{% include "order.html" %}
 {% include "results.html" %}
 
 {% endblock %}

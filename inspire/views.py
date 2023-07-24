@@ -262,8 +262,6 @@ def feed(request):
         if request.user.is_authenticated:
             featured = get_featured()
             liked = get_liked(request.user, list(featured.values()))
-            print(liked)
-            print(featured['quote'].postid)
             return render(request, "feed.html", {"user": request.user, "posts": featured, "liked": liked})
         else:
             return redirect("/login")
@@ -389,7 +387,6 @@ def accountsettings(request):
             if pw != confirmpw:
                 data["pwmessage"] = "Usernames don't match."
             elif user is None:
-                print(request.user.username)
                 data["pwmessage"] = "Current password is incorrect."
             elif not valid_password(pw):
                 data["pwmessage"] = """Password must have at least 1 uppercase letter, 
@@ -468,7 +465,7 @@ def staffpost(request, ptype):
         
         return render(request, "staffpost.html", {"ptype": ptype})
     
-def jsondata(request, data, minlimit=0, maxlimit=1, avoid="", maxPost=0, postid="", query="", cattype="", catorder=""):
+def jsondata(request, data, minlimit=0, maxlimit=1, avoid="", maxPost=0, postid="", query="", cattype="", order=""):
     if request.method == "GET":
         if request.user.is_authenticated:
             if data == "notifications":
@@ -502,14 +499,20 @@ def jsondata(request, data, minlimit=0, maxlimit=1, avoid="", maxPost=0, postid=
                 pavoid = avoid.split('-')[:-1]
 
                 if cattype == "all":
-                    r = allquery(catorder, pavoid, maxPost)
+                    r = allquery(order, pavoid, maxPost)
                 elif cattype == "cat":
-                    r = catquery(query, q=catorder,pavoid=pavoid, num=maxPost)  
+                    r = catquery(query, q=order,pavoid=pavoid, num=maxPost)  
                 elif cattype == "sub":
-                    r = catquery(query, sc=True, q=catorder,pavoid=pavoid, num=maxPost)
+                    r = catquery(query, sc=True, q=order,pavoid=pavoid, num=maxPost)
                 updated_liked = get_liked(request.user, get_posts(r))
                 updated_results = get_posts(r, d=True)   
                 return JsonResponse({"res": updated_results, "li":updated_liked})
+            elif data == 'fav':
+                pavoid = avoid.split('-')[:-1]
+                r = favquery(request.user, q=order, pavoid=pavoid, num=maxPost)
+                updated_liked = get_liked(request.user, get_posts(r))
+                updated_related = get_posts(r, d=True)
+                return JsonResponse({"res": updated_related, "li":updated_liked})
         else:
             return HttpResponseForbidden()
         
@@ -609,6 +612,23 @@ def categories(request, path=""):
                     "cats": rcats, "results": results, "liked": liked, 
                     "postids": json.dumps(postids), "path": paths, "cattype": cat, 
                     "category": qcategory, "qtype": "cat"})
+        else:
+            return redirect("/login")
+    elif request.method == "PUT":
+        body = json.loads(request.body)
+        handle_like(request.user, body)
+        return HttpResponse(500)
+    
+def favourites(request):
+    if request.method == "GET":
+        if request.user.is_authenticated:
+            postids = favquery(request.user, num=1)
+            results = get_posts(postids)
+            liked = get_liked(request.user, results)
+
+            return render(request, "favourites.html", {"user": request.user, 
+                        "results": results, "liked": liked, "postids": json.dumps(postids), 
+                        "qtype": "fav"})
         else:
             return redirect("/login")
     elif request.method == "PUT":

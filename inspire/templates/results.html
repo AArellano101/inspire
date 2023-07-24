@@ -110,18 +110,20 @@
             url = `/jsondata/related/${sPIs}/${postInterval}/${$('#main-post').attr('data-postid')}`
         } else if (qtype == 'cat') {
             url = `/jsondata/cat/${sPIs}/{{ category }}/${postInterval}/{{ cattype }}/${$('#order-by').val()}`
+        } else if (qtype == 'fav') {
+            url = `/jsondata/fav/${sPIs}/${postInterval}/${$('#order-by').val()}/fav`
         }
 
-
+        console.log(url)
         await fetch(url)
             .then(response => response.json())
             .then(response => {
                 const results = response['res']
                 const liked = response['li']
 
-                if (results.length == 0) {
-                    $('#load-more').remove()
-                }
+                // if (results.length == 0) {
+                //     $('#load-more').remove()
+                // }
 
                 for (const res of results) {
                     createPost(res, liked)

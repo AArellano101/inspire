@@ -80,6 +80,14 @@ def get_num_likes(postid):
         return Favourite.objects.get(postid=postid).likes
     return 0
 
+def get_favs_postids(user):
+    favs = user.favourites
+    postids = []
+    for fav in favs:
+        postids.append(Favourite.objects.get(id=fav).postid)
+
+    return postids
+
 
 def readable_datetime(date):
     months = {1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "June",
@@ -214,6 +222,21 @@ def rv_ex(a):
 
 def cb_set(s1, s2):
     return set(list(s1)+list(s2))
+
+def conv_q(q):
+    if q == 'likes':
+        q = '-likes'
+    elif q == 'newest':
+        q = '-created'
+    elif q == 'oldest':
+        q = 'created'
+    elif q == 'random':
+        q = '?'
+    elif q == 'recentliked':
+        q == 'recentliked'
+    elif q == 'oldestliked':
+        q == 'oldestliked'
+    return q
 
 
 def similar_posts(postid, pavoid=[], num=10):
@@ -355,18 +378,33 @@ def tagquery(tag, pavoid=[], num=10):
     db_results = list(db_results)[:num]
     return db_results
 
+def order_query(q, db_results_r, pavoid):
+    db_results = {}
+    db_results_r = list(db_results_r)
+
+    for r in db_results_r:
+        if r.postid not in pavoid:
+            if q == '-likes':
+                db_results[r.postid] = r.likes
+            elif q == '-created' or q == 'created':
+                db_results[r.postid] = r.created
+            elif q == '?':
+                db_results[r.postid] = randint(0, 1000)
+
+    if q in ['-likes', '-created', 'created', '?']:
+        if q == '-likes' or q == '-created' or q == '?':
+            db_results = dict(
+                sorted(db_results.items(), key=lambda item: item[1], reverse=True))
+        elif q == 'created':
+            db_results = dict(
+                sorted(db_results.items(), key=lambda item: item[1]))
+            
+    return db_results
+
 
 def catquery(cat, sc=False, q='likes', pavoid=[], num=10):
-    if q == 'likes':
-        q = '-likes'
-    elif q == 'newest':
-        q = '-created'
-    elif q == 'oldest':
-        q = 'created'
-    elif q == 'random':
-        q = '?'
+    q = conv_q(q)
 
-    db_results = {}
     if not sc:
         db_results_r = set(Text.objects.filter(category=cat).order_by(q)[:100])
         db_results_r = cb_set(db_results_r, set(Video.objects.filter(category=cat)
@@ -377,60 +415,35 @@ def catquery(cat, sc=False, q='likes', pavoid=[], num=10):
         db_results_r = cb_set(db_results_r, set(Video.objects.filter(
             subcategories__contains=[cat]).order_by(q)[:25]))
 
-    db_results_r = list(db_results_r)
-
-    for r in db_results_r:
-        if r.postid not in pavoid:
-            if q == '-likes':
-                db_results[r.postid] = r.likes
-            elif q == '-created' or q == 'created':
-                db_results[r.postid] = r.created
-            elif q == '?':
-                db_results[r.postid] = randint(0, 1000)
-
-    if q in ['-likes', '-created', 'created', '?']:
-        if q == '-likes' or q == '-created' or q == '?':
-            db_results = dict(
-                sorted(db_results.items(), key=lambda item: item[1], reverse=True))
-        elif q == 'created':
-            db_results = dict(
-                sorted(db_results.items(), key=lambda item: item[1]))
+    db_results = order_query(q, db_results_r, pavoid)
 
     db_results = list(db_results)[:num]
     return db_results
 
 
 def allquery(q='likes', pavoid=[], num=10):
-    if q == 'likes':
-        q = '-likes'
-    elif q == 'newest':
-        q = '-created'
-    elif q == 'oldest':
-        q = 'created'
-    elif q == 'random':
-        q = '?'
+    q = conv_q(q)
 
-    db_results = {}
     db_results_r = set(Text.objects.all().order_by(q)[:100])
     db_results_r = cb_set(db_results_r, set(Video.objects.all()
                                             .order_by(q)[:25]))
-    db_results_r = list(db_results_r)
-    for r in db_results_r:
-        if r.postid not in pavoid:
-            if q == '-likes':
-                db_results[r.postid] = r.likes
-            elif q == '-created' or q == 'created':
-                db_results[r.postid] = r.created
-            elif q == '?':
-                db_results[r.postid] = randint(0, 1000)
+    db_results = order_query(q, db_results_r, pavoid)
+    db_results = list(db_results)[:num]
+    return db_results
 
-    if q in ['-likes', '-created', 'created', '?']:
-        if q == '-likes' or q == '-created' or q == '?':
-            db_results = dict(
-                sorted(db_results.items(), key=lambda item: item[1], reverse=True))
-        elif q == 'created':
-            db_results = dict(
-                sorted(db_results.items(), key=lambda item: item[1]))
+def favquery(user, q='recentliked', pavoid=[], num=10):
+    q = conv_q(q)
+    favs = get_favs_postids(user)
+    if q == 'recentliked' or q == 'oldestliked':
+        db_results = [fav for fav in favs if fav not in pavoid]
+        if q == 'oldestliked':
+            db_results.reverse()
+    else:
+        db_results_r = set(Text.objects.filter(postid__in=favs).order_by(q)[:100])
+        db_results_r = cb_set(db_results_r, 
+                    set(Video.objects.filter(postid__in=favs).order_by(q)[:25]))
+        
+        db_results = order_query(q, db_results_r, pavoid)
 
     db_results = list(db_results)[:num]
     return db_results
