@@ -3,20 +3,24 @@
 
 {% block body %}
 
-<div>
-   Hello, {{ user.username }}
+<div id="welcome">
+    Hello, {{ user.username }}
+    <h2>Today</h2>
 </div>
 
-<h2>Today</h2>
-<div class="posts"> 
-    <div class="post" id="quote-{{ posts.quote.postid }}" data-postid="{{ posts.quote.postid }}">
+<div class="posts">
+    <div class="post post_{{ posts.quote.postsize }}" id="quote-{{ posts.quote.postid }}" data-postid="{{ posts.quote.postid }}">
         <div class="post-header">
-            <h3>Today's Quote</h3>
+            <h3 class="feed-title">Today's Quote</h3>
             <div class="post-like" id="quote-like-{{ posts.quote.postid }}">
                 {% if liked|keyvalue:posts.quote.postid %}
-                <span class="like-icon" data-like="liked">Unlike</span>
+                <span class="like-icon" data-like="liked" id="li-{{ posts.quote.postid }}">
+                    <img src="/static/bheart.png" class="like-icon-img" id="lii-{{ posts.quote.postid }}">
+                </span>
                 {% else %}
-                <span class="like-icon" data-like="unliked">Like</span>
+                <span class="like-icon" data-like="unliked" id="li-{{ posts.quote.postid }}">
+                    <img src="/static/heart.png" class="like-icon-img" id="lii-{{ posts.quote.postid }}">
+                </span>
                 {% endif %}
             </div>
         </div>
@@ -25,25 +29,30 @@
             <div id="quote-text">{{ posts.quote.text }}</div>
             <div id="quote-description">{{ posts.quote.description }}</div>
         </div>
-        
-        <div id="quote-tags">
-            {% for tag in posts.quote.tags %}
-            <span class="tag">
-                {{ tag }}
-            </span>
-            {% endfor %}
+        <div class="post-footer">
+            <div id="quote-tags">
+                {% for tag in posts.quote.tags %}
+                <span class="tag">
+                    {{ tag }}
+                </span>
+                {% endfor %}
+            </div>
+            <div id="quote-date" class="post-date">{{ posts.quote.readablecreated }}</div>
         </div>
-        <div id="quote-date" class="post-date">{{ posts.quote.readablecreated }}</div>
     </div>
 
-    <div class="post" id="speech-{{ posts.speech.postid }}" data-postid="{{ posts.speech.postid }}">
+    <div class="post post_{{ posts.speech.postsize }}" id="speech-{{ posts.speech.postid }}" data-postid="{{ posts.speech.postid }}">
         <div class="post-header">
-            <h3>Today's Speech</h3>
+            <h3 class="feed-title">Today's Speech</h3>
             <div class="post-like" id="speech-like-{{ posts.speech.postid }}">
                 {% if liked|keyvalue:posts.speech.postid %}
-                <span class="like-icon" data-like="liked">Unlike</span>
+                <span class="like-icon" data-like="liked" id="li-{{ posts.speech.postid }}">
+                    <img src="/static/bheart.png" class="like-icon-img" id="lii-{{ posts.speech.postid }}">
+                </span>
                 {% else %}
-                <span class="like-icon" data-like="unliked">Like</span>
+                <span class="like-icon" data-like="unliked" id="li-{{ posts.speech.postid }}">
+                    <img src="/static/heart.png" class="like-icon-img" id="lii-{{ posts.speech.postid }}">
+                </span>
                 {% endif %}
             </div>
         </div>
@@ -51,29 +60,35 @@
         <div class="post-body-redirect" data-postid="{{ posts.speech.postid }}">
             <div id="speech-title">{{ posts.speech.title }}</div>
             <div class="post-video">
-                <img class="thumbnail" src="{{ posts.speech.image }}">  
+                <img class="thumbnail" src="{{ posts.speech.image }}">
             </div>
             <div id="speech-description">{{ posts.speech.description }}</div>
         </div>
-        
-        <div id="speech-tags">
-            {% for tag in posts.speech.tags %}
-            <span class="tag">
-                {{ tag }}
-            </span>
-            {% endfor %}
+
+        <div class="post-footer">
+            <div id="speech-tags">
+                {% for tag in posts.speech.tags %}
+                <span class="tag">
+                    {{ tag }}
+                </span>
+                {% endfor %}
+            </div>
+            <div class="post-date" id="speech-date">{{ posts.speech.readablecreated }}</div>
         </div>
-        <div class="post-date" id="speech-date">{{ posts.speech.readablecreated }}</div>
     </div>
 
-    <div class="post" id="article-{{ posts.article.postid }}" data-postid="{{ posts.article.postid }}">
+    <div class="post post_{{ posts.article.postsize }}" id="article-{{ posts.article.postid }}" data-postid="{{ posts.article.postid }}">
         <div class="post-header">
-            <h3>Today's Reading</h3>
+            <h3 class="feed-title">Today's Reading</h3>
             <div class="post-like" id="article-like-{{ posts.article.postid }}">
                 {% if liked|keyvalue:posts.article.postid %}
-                <span class="like-icon" data-like="liked">Unlike</span>
+                <span class="like-icon" data-like="liked" id="li-{{ posts.article.postid }}">
+                    <img src="/static/bheart.png" class="like-icon-img" id="lii-{{ posts.article.postid }}">
+                </span>
                 {% else %}
-                <span class="like-icon" data-like="unliked">Like</span>
+                <span class="like-icon" data-like="unliked" id="li-{{ posts.article.postid }}">
+                    <img src="/static/heart.png" class="like-icon-img" id="lii-{{ posts.article.postid }}">
+                </span>
                 {% endif %}
             </div>
         </div>
@@ -82,33 +97,39 @@
             <div id="article-description">{{ posts.article.description }}</div>
             <iframe src="{{ posts.article.text }}" id="article-text"></iframe>
         </div>
-        <div id="article-tags">
-            {% for tag in posts.article.tags %}
-            <span class="tag">
-                {{ tag }}
-            </span>
-            {% endfor %}
+        <div class="post-footer">
+            <div id="article-tags">
+                {% for tag in posts.article.tags %}
+                <span class="tag">
+                    {{ tag }}
+                </span>
+                {% endfor %}
+            </div>
+            <div class="post-date" id="article-date">{{ posts.article.readablecreated }}</div>
         </div>
-        <div class="post-date" id="article-date">{{ posts.article.readablecreated }}</div>
     </div>
 
-    <div class="post-container" id="misc">
-        <div class="post" id="movie-{{ posts.movie.postid }}" data-postid="{{ posts.movie.postid }}">
-            <div class="post-header">
-                <h3>Movie Recommendation</h3>
-                <div class="post-like" id="movie-like-{{ posts.movie.postid }}">
-                    {% if liked|keyvalue:posts.movie.postid %}
-                    <span class="like-icon" data-like="liked">Unlike</span>
-                    {% else %}
-                    <span class="like-icon" data-like="unliked">Like</span>
-                    {% endif %}
-                </div>
+    <div class="post post_{{ posts.movie.postsize }}" id="movie-{{ posts.movie.postid }}" data-postid="{{ posts.movie.postid }}">
+        <div class="post-header">
+            <h3 class="feed-title">Movie Recommendation</h3>
+            <div class="post-like" id="movie-like-{{ posts.movie.postid }}">
+                {% if liked|keyvalue:posts.movie.postid %}
+                <span class="like-icon" data-like="liked" id="li-{{ posts.movie.postid }}">
+                    <img src="/static/bheart.png" class="like-icon-img" id="lii-{{ posts.movie.postid }}">
+                </span>
+                {% else %}
+                <span class="like-icon" data-like="unliked" id="li-{{ posts.movie.postid }}">
+                    <img src="/static/heart.png" class="like-icon-img" id="lii-{{ posts.movie.postid }}">
+                </span>
+                {% endif %}
             </div>
-            <div class="post-body-redirect" data-postid="{{ posts.movie.postid }}">
-                <div id="movie-title">{{ posts.movie.title }}</div>
-                <div id="movie-description">{{ posts.movie.text }}</div>
-                <image id="movie-image" src="{{ posts.movie.image }}"></image>
-            </div>
+        </div>
+        <div class="post-body-redirect" data-postid="{{ posts.movie.postid }}">
+            <div id="movie-title">{{ posts.movie.title }}</div>
+            <div id="movie-description">{{ posts.movie.text }}</div>
+            <img id="movie-image" src="{{ posts.movie.image }}">
+        </div>
+        <div class="post-footer">
             <div id="movie-tags">
                 {% for tag in posts.movie.tags %}
                 <span class="tag">
@@ -118,23 +139,29 @@
             </div>
             <div class="post-date" id="movie-date">{{ posts.movie.readablecreated }}</div>
         </div>
+    </div>
 
-        <div class="post" id="album-{{ posts.album.postid }}" data-postid="{{ posts.album.postid }}">
-            <div class="post-header">
-                <h3>Album Recommendation</h3>
-                <div class="post-like" id="album-like-{{ posts.album.postid }}">
-                    {% if liked|keyvalue:posts.album.postid %}
-                    <span class="like-icon" data-like="liked">Unlike</span>
-                    {% else %}
-                    <span class="like-icon" data-like="unliked">Like</span>
-                    {% endif %}
-                </div>
+    <div class="post post_{{ posts.album.postsize }}" id="album-{{ posts.album.postid }}" data-postid="{{ posts.album.postid }}">
+        <div class="post-header">
+            <h3 class="feed-title">Album Recommendation</h3>
+            <div class="post-like" id="album-like-{{ posts.album.postid }}">
+                {% if liked|keyvalue:posts.album.postid %}
+                <span class="like-icon" data-like="liked" id="li-{{ posts.album.postid }}">
+                    <img src="/static/bheart.png" class="like-icon-img" id="lii-{{ posts.album.postid }}">
+                </span>
+                {% else %}
+                <span class="like-icon" data-like="unliked" id="li-{{ posts.album.postid }}">
+                    <img src="/static/heart.png" class="like-icon-img" id="lii-{{ posts.album.postid }}">
+                </span>
+                {% endif %}
             </div>
-            <div class="post-body-redirect" data-postid="{{ posts.album.postid }}">
-                <div id="album-title">{{ posts.album.title }}</div>
-                <div id="album-description">{{ posts.album.text }}</div>
-                <image id="album-image" src="{{ posts.album.image }}"></image>
-            </div>
+        </div>
+        <div class="post-body-redirect" data-postid="{{ posts.album.postid }}">
+            <div id="album-title">{{ posts.album.title }}</div>
+            <div id="album-description">{{ posts.album.text }}</div>
+            <img id="album-image" src="{{ posts.album.image }}">
+        </div>
+        <div class="post-footer">
             <div id="album-tags">
                 {% for tag in posts.album.tags %}
                 <span class="tag">
@@ -149,14 +176,9 @@
 
 
 {% if user.is_staff %}
-<br>
-<a href="/staff">Staff Resources</a>
+<div id="staff-resources">
+    <a href="/staff">Staff Resources</a>
+</div>
 {% endif %}
-
-<form action="/feed" method="post">
-    {% csrf_token %}
-    <input type="hidden" value="logout" name="type">
-    <input type="submit" value="Log Out">
-</form>
 
 {% endblock %}

@@ -14,22 +14,31 @@
     });
 </script>
 
+<div id="info-body">
+  <div class="i-form">
+    <form action="/signup" method="post">
+        {% csrf_token %}
+        <input name="username" placeholder="Username" value="{{ username }}" class="index-input ii-big">
+        <br>
+        <input name="password" placeholder="Password" type="password" value="{{ password }}" class="password index-input ii-big">
+        <br>
+        <div id="show-pw">
+          <input type="checkbox" id="password-checkbox"><span id="show-pw-t">show password</span>
+        </div>
+        <br>
+        <input name="email" placeholder="Email" value="{{ email }}" class="index-input ii-big">
+        <br>
+        <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response"> 
+        <br>
+        <input type="submit" value="Sign Up" class="index-submit">
+    </form>
+  </div>
 
-<form action="/signup" method="post">
-    {% csrf_token %}
-    <input name="username" placeholder="Username" value="{{ username }}">
-    <br>
-    <input name="password" placeholder="Password" type="password" value="{{ password }}" class="password">
-    <input type="checkbox" id="password-checkbox">Show Password
-    <br>
-    <input name="email" placeholder="Email" value="{{ email }}">
-    <br>
-    <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response"> 
-    <br>
-    <input type="submit" value="Sign Up">
-</form>
+  <div class="e-message">
+    {{ message }}
+  </div>
+  
+  <a href="/login" class="index-link-alt">Already have an account?</a>
+</div>
 
-{{ message }}
-<br>
-<a href="/login">Log In</a>
 {% endblock %}

@@ -238,7 +238,6 @@ def conv_q(q):
         q == 'oldestliked'
     return q
 
-
 def similar_posts(postid, pavoid=[], num=10):
     post = get_post(postid)
     ptype = text_or_video(post.category)
@@ -324,6 +323,12 @@ def searchquery(query, pavoid=[], num=10):
             description__icontains=q_word).order_by('-id')[:100]))
         db_results_d = cb_set(db_results_d, set(Video.objects.filter(
             description__icontains=q_word).order_by('-id')[:25]))
+       
+        db_results_ta = set(Text.objects.filter(
+        tags__contains=[q_word]).order_by('-likes')[:100])
+        print(db_results_ta)
+        db_results_ta = cb_set(db_results_ta, set(Video.objects.filter(
+            tags__contains=[q_word]).order_by('-likes')[:25]))
 
         db_results_te = cb_set(db_results_te, set(Text.objects.filter(
             text__icontains=q_word).order_by('-id')[:100]))
@@ -342,6 +347,16 @@ def searchquery(query, pavoid=[], num=10):
         else:
             if d.postid not in pavoid:
                 db_results[d.postid] = compare(query, d.description)
+
+    db_results_ta = list(db_results_ta)
+    for d in db_results_ta:
+        if d in db_results:
+            i = compare(query, ' '.join(d.tags))
+            if db_results[d.postid] < i:
+                db_results[d.postid] = i
+        else:
+            if d.postid not in pavoid:
+                db_results[d.postid] = compare(query, ' '.join(d.tags))
 
     db_results_te = list(db_results_te)
     for d in db_results_te:

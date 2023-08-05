@@ -17,6 +17,7 @@ import environ
 import pytz
 import requests
 import json
+from urllib.parse import unquote
 
 env = environ.Env()
 environ.Env.read_env()
@@ -29,7 +30,8 @@ def index(request):
         email = request.POST.get("email")
         message = request.POST.get("message")
 
-        if message is None:
+
+        if not len(message):
             return render(request, "index.html", 
             {"message": message, "error": "Please write us a message."})
         
@@ -42,6 +44,8 @@ def index(request):
 
 def signup(request):
     if request.method == "GET":
+        if request.user.is_authenticated:
+            redirect("/feed")
         data = {"recaptcha_site_key": settings.GOOGLE_RECAPTCHA_SITE_KEY}
         return render(request, "signup.html", data)
     elif request.method == "POST":
@@ -66,8 +70,7 @@ def signup(request):
         elif InspireUser.objects.filter(username=username).exists():
             message = "Username is taken"
         elif not valid_username(username):
-            message = """Username cannot have spaces or contain any of the following:
-            ", ', /, \\, -, @. Username cannot exceed 30 characters"""
+            message = """Username cannot have spaces, contain any special characters, and cannot exceed 30 characters"""
         elif not valid_password(password):
             message = """Password must have at least 1 uppercase letter, 
             at least 1 lowercase letter, 1 number, 
@@ -265,9 +268,6 @@ def feed(request):
             return render(request, "feed.html", {"user": request.user, "posts": featured, "liked": liked})
         else:
             return redirect("/login")
-    elif request.method == "POST":
-        logout(request)
-        return redirect("/")
     elif request.method == "PUT":
         body = json.loads(request.body)
 
@@ -281,6 +281,9 @@ def account(request):
             return render(request, "account.html", {"user": request.user})
         else:
             return redirect("/login")
+    elif request.method == "POST":
+        logout(request)
+        return redirect("/")
         
 def accountsettings(request):
     if request.method == "GET":
@@ -302,8 +305,7 @@ def accountsettings(request):
             elif InspireUser.objects.filter(username=username).exists():
                 data["usermessage"] = "Username is taken"
             elif not valid_username(username):
-                data["usermessage"] = """Username cannot have spaces or contain any of the following:
-                ", ', /, \\, -, @. Username cannot exceed 30 characters"""
+                data["usermessage"] = """Username cannot have spaces, contain any special characters, and cannot exceed 30 characters"""
             elif request.user.lastunchange is not None:
                 if datetime.now(pytz.utc) - request.user.lastunchange > timedelta(days = 1):
                     request.user.username = username
@@ -412,8 +414,12 @@ def accountsettings(request):
                 data["pwmessage"] = "Success!"
                 send_success_email = True
                 emailsubject = "New Password"
-                emailmessage = f"Password has successfully been changed."
+                emailmessage = "Password has successfully been changed."
 
+        elif formtype == "delete-account":
+            send_success_email = True
+            emailsubject = "Account Deletion"
+            emailmessage = "Account to be deleted within the next 2 days."
 
         if send_success_email:
             if request.user.emailverified:
@@ -427,6 +433,7 @@ def accountsettings(request):
                 print("Email sent.")
                 
             notify(request.user, emailmessage)
+        
         
         return render(request, "accountsettings.html", data)
     
@@ -449,18 +456,20 @@ def staffpost(request, ptype):
         subcats = request.POST.get("subcats").split(',')[0:-1]
         category = request.POST.get("category")
         description = request.POST.get("description")
+        postsize = request.POST.get("postsize")
+
         if ptype == "text":
             text = request.POST.get("text")
             image = request.POST.get("image")
 
-            text = Text.objects.create_text(title, tags, category, subcats, description, text, image)
+            text = Text.objects.create_text(title, tags, category, subcats, description, text, image, postsize)
             text.save()
         elif ptype == "video":
             src = request.POST.get("src")
             platform = request.POST.get("platform")
             image = request.POST.get("image")
 
-            video = Video.objects.create_video(title, tags, category, subcats, description, src, platform, image)
+            video = Video.objects.create_video(title, tags, category, subcats, description, src, platform, image, postsize)
             video.save()
         
         return render(request, "staffpost.html", {"ptype": ptype})
@@ -520,7 +529,7 @@ def post(request, postid):
     if request.method == "GET":
         if request.user.is_authenticated:
             post = get_post(postid)
-            related = get_posts(similar_posts(postid, num=2))
+            related = get_posts(similar_posts(postid))
             liked = get_liked(request.user, [post] + related)
             
             postids = [post.postid] + [r.postid for r in related]
@@ -540,8 +549,8 @@ def post(request, postid):
 def search(request, query):
     if request.method == "GET":
         if request.user.is_authenticated:
-            squery = query.replace("-"," ")
-            postids = searchquery(squery, num=1)
+            squery = unquote(query)
+            postids = searchquery(squery)
             results = get_posts(postids)
             liked = get_liked(request.user, results)
 
@@ -560,7 +569,7 @@ def search(request, query):
 def tag(request, qtag):
     if request.method == "GET":
         if request.user.is_authenticated:
-            postids = tagquery(qtag, num=1)
+            postids = tagquery(qtag)
             results = get_posts(postids)
             liked = get_liked(request.user, results)
 
@@ -593,10 +602,10 @@ def categories(request, path=""):
                     cats = cats[path]
 
                 if len(paths) == 1:
-                    postids = catquery(paths[-1], num=1)
+                    postids = catquery(paths[-1])
                     cat = "cat"
                 else:
-                    postids = catquery(paths[-1], sc=True, num=1)
+                    postids = catquery(paths[-1], sc=True)
                     cat = "sub"
                 qcategory = paths[-1]
 
@@ -622,7 +631,7 @@ def categories(request, path=""):
 def favourites(request):
     if request.method == "GET":
         if request.user.is_authenticated:
-            postids = favquery(request.user, num=1)
+            postids = favquery(request.user)
             results = get_posts(postids)
             liked = get_liked(request.user, results)
 

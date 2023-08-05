@@ -5,22 +5,24 @@ from datetime import datetime
 from random import randint
 import pytz
 
+
 def readable_datetime(date):
-    months = {1:"Jan",2:"Feb",3:"Mar",4:"Apr",5:"May",6:"June",
-              7:"July",8:"Aug",9:"Sep",10:"Oct",11:"Nov",12:"Dec"}
-    
+    months = {1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "June",
+              7: "July", 8: "Aug", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dec"}
+
     month = months[int(date.strftime("%m"))]
     day = date.strftime("%d")
-    year = date.strftime("%Y")  
+    year = date.strftime("%Y")
     time = date.strftime("%H:%M")
 
     return f"{month} {day}, {year} - {time}"
 
+
 def get_pid(l):
     code = ""
     rules = [
-        lambda s: not (a <= 64 and a >=58),
-        lambda s: not (a <= 96 and a >=91),
+        lambda s: not (a <= 64 and a >= 58),
+        lambda s: not (a <= 96 and a >= 91),
     ]
     it = 0
 
@@ -32,9 +34,11 @@ def get_pid(l):
 
     return code
 
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, password, favourites=[], **extra_fields):
-        user = self.create(username=username, favourites=favourites, **extra_fields)
+        user = self.create(username=username,
+                           favourites=favourites, **extra_fields)
         user.set_password(password)
         user.save()
         return user
@@ -45,7 +49,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("is_active", True)
 
         return self.create_user(username, password, **extra_fields)
-    
+
     def add_notification(self, user, id):
         user.notifications.insert(0, id)
         user.save()
@@ -58,25 +62,28 @@ class CustomUserManager(BaseUserManager):
         user.favourites.remove(fid)
         user.save()
 
+
 class FavouriteManager(models.Manager):
     def create_favourite(self, category, postid):
         f = self.create(category=category, postid=postid)
         f.save()
         return f
-    
+
+
 class MessageManager(models.Manager):
     def create_message(self, name, email, message):
         message = self.create(name=name, email=email, message=message)
         return message
-    
+
+
 class PostManager(models.Manager):
-    def create_text(self, title, tags, category, subcategories, description, text, image):
-        text = self.create(title=title, tags=tags, 
-            created=datetime.now(pytz.utc), category=category, 
-            subcategories=subcategories,
-            description=description, text=text, image=image,
-            readablecreated=readable_datetime(datetime.now(pytz.utc)))
-        
+    def create_text(self, title, tags, category, subcategories, description, text, image, postsize):
+        text = self.create(title=title, tags=tags,
+                           created=datetime.now(pytz.utc), category=category,
+                           subcategories=subcategories,
+                           description=description, text=text, image=image, postsize=postsize,
+                           readablecreated=readable_datetime(datetime.now(pytz.utc)))
+
         while True:
             pid = get_pid(10)
             if not self.filter(postid=pid).exists():
@@ -84,14 +91,15 @@ class PostManager(models.Manager):
         text.postid = pid
         text.save()
         return text
-    
-    def create_video(self, title, tags, category, subcategories, description, src, platform, image):
-        video = self.create(title=title, tags=tags, 
-            created=datetime.now(pytz.utc), category=category,
-            subcategories=subcategories, 
-            description=description, readablecreated=readable_datetime(datetime.now(pytz.utc)),
-            src=src, platform=platform, image=image)
-        
+
+    def create_video(self, title, tags, category, subcategories, description, src, platform, image, postsize):
+        video = self.create(title=title, tags=tags,
+                            created=datetime.now(pytz.utc), category=category,
+                            subcategories=subcategories,
+                            description=description, readablecreated=readable_datetime(
+                                datetime.now(pytz.utc)),
+                            src=src, platform=platform, image=image, postsize=postsize)
+
         while True:
             pid = get_pid(10)
             if not self.filter(postid=pid).exists():
@@ -99,7 +107,7 @@ class PostManager(models.Manager):
         video.postid = pid
         video.save()
         return video
-    
+
     def like(self, postid):
         if self.filter(postid=postid).exists():
             p = self.get(postid=postid)
@@ -111,7 +119,8 @@ class PostManager(models.Manager):
             p = self.get(postid=postid)
             p.likes -= 1
             p.save()
-    
+
+
 class NotificationManager(models.Manager):
     def create_notification(self, noti):
         n = self.create(noti=noti, sent=datetime.now(pytz.utc))

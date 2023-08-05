@@ -78,53 +78,65 @@
     })
 </script>
 
-<form action="/staff/post/{{ ptype }}" method="post" id="form">
-    {% csrf_token %}
-    <input name="title" placeholder="Title" required>
-    <br>
-    <label for="category">Category: </label>
-    <select name="category" id="category">
-        {% if ptype == "text" %}
-        <option value="quote">Quote</option>
-        <option value="article">Article</option>
-        <option value="movie">Movie</option>
-        <option value="album">Album</option>
-        {% endif %}
+<div id="staff-post-form">
+    <form action="/staff/post/{{ ptype }}" method="post" id="form">
+        {% csrf_token %}
+        <input name="title" placeholder="Title" required>
+        <br>
+        <label for="category">Category: </label>
+        <select name="category" id="category">
+            {% if ptype == "text" %}
+            <option value="quote">Quote</option>
+            <option value="article">Article</option>
+            <option value="movie">Movie</option>
+            <option value="album">Album</option>
+            {% endif %}
 
-        {% if ptype == "video" %}
-        <option value="speech">Speech</option>
+            {% if ptype == "video" %}
+            <option value="speech">Speech</option>
+            {% endif %}
+        </select>
+        <br>
+        <div id="subcats"></div>
+        <input placeholder="Add Subcategories" id="input-subcats">
+        <span id="add-subcats">Add Subcategory</span>
+        <br>
+        <textarea name="description" cols="40" rows="5" placeholder="Description"></textarea>
+        <br>
+        {% if ptype == "text" %}
+        <textarea name="text" cols="40" rows="5" placeholder="Text" required></textarea>
+        <br>
+        <input name="image" placeholder="Image">
         {% endif %}
-    </select>
+        {% if ptype == "video" %}
+        <input name="src" placeholder="Video Link" required>
+        <br>
+        <input name="image" placeholder="Thumbnail/Image" required>
+        <br>
+        <label for="platform">Platform: </label>
+        <select name="platform" id="platform">
+            <option value="youtube">Youtube</option>
+        </select>
+        <br>
+        {% endif %}
+        <input name="subcats" id="hidden-subcats" hidden>
+        <input name="tags" id="hidden-tags" hidden>
+        <br>
+        <label for="postsize">Post Size: </label>
+        <select name="postsize" id="postsize">
+            <option value="xsmall">X Small</option>
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+            <option value="xlarge">X Large</option>
+        </select>
+        <br>
+        <input type="submit" value="Post">
+    </form>
     <br>
-    <div id="subcats"></div>
-    <input placeholder="Add Subcategories" id="input-subcats">
-    <span id="add-subcats">Add Subcategory</span>
-    <br>
-    <textarea name="description" cols="40" rows="5" placeholder="Description"></textarea>
-    <br>
-    {% if ptype == "text" %}
-    <textarea name="text" cols="40" rows="5" placeholder="Text" required></textarea>
-    <br>
-    <input name="image" placeholder="Image">
-    {% endif %}
-    {% if ptype == "video" %}
-    <input name="src" placeholder="Video Link" required>
-    <br>
-    <input name="image" placeholder="Thumbnail/Image" required>
-    <br>
-    <label for="platform">Platform: </label>
-    <select name="platform" id="platform">
-        <option value="youtube">Youtube</option>
-    </select>
-    <br>
-    {% endif %}
-    <input name="subcats" id="hidden-subcats" hidden>
-    <input name="tags" id="hidden-tags" hidden>
-    <br>
-    <input type="submit" value="Post">
-</form>
-<br>
-<div id="tags"></div>
-<input placeholder="Add Tags" id="add-tags">
+    <div id="tags"></div>
+    <input placeholder="Add Tags" id="add-tags">
+</div>
+
 
 {% endblock %}

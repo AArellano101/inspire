@@ -4,21 +4,31 @@
 
 {% include "info.html" %}
 
-<form action="/login" method="post" autocomplete="on">
-    {% csrf_token %}
-    <input name="username" placeholder="Username/Email">
-    <br>
-    <input name="password" placeholder="Password" type="password" class="password">
-    <input type="checkbox" id="password-checkbox">Show Password
-    <br>
-    <input name="remember-me" type="checkbox">Remember Me
-    <br>
-    <input type="submit" value="Log In">
-</form>
+<div id="info-body">
+    <div class="i-form">
 
-{{ message }}
-<br>
-<a href="/forgotpassword">Forgot Password?</a>
-<br>
-<a href="/signup">Sign Up</a>
+        <form action="/login" method="post" autocomplete="on">
+            {% csrf_token %}
+            <input name="username" placeholder="Username/Email" class="index-input ii-big">
+            <br>
+            <input name="password" placeholder="Password" type="password" class="password index-input ii-big">
+            <br>
+            <div id="show-pw">
+                <span id="show-pw-t">show password</span><input type="checkbox" id="password-checkbox">
+            </div>
+            <br>
+            <span id="show-pw-t">remember me</span><input name="remember-me" type="checkbox">
+            <br><br>
+            <input type="submit" value="Log In" class="index-submit">
+        </form>
+    </div>
+  
+    <div class="e-message">
+      {{ message }}
+    </div>
+    <br>
+    <a href="/forgotpassword" class="index-link-alt">Forgot Password?</a>
+    <br><br><br>
+    <a href="/signup" class="index-link-alt">Don't have an account?</a>
+</div>
 {% endblock %}

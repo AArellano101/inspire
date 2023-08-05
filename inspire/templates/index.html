@@ -1,24 +1,53 @@
 {% extends "layout.html" %}
 
 {% block body %}
-<br>
-<a href="/signup">Sign Up</a>
-<br>
-<a href="/login">Log In</a>
-<br>
-<br>
-<b>Get In Touch</b>
-<form action="/" method="post" autocomplete="off">
-    {% csrf_token %}
-    <input name="name" placeholder="Name">
-    <br>
-    <input name="email" placeholder="Email">
-    <br>
-    <textarea name="message" cols="40" rows="5" placeholder="Your Message">{{ message }}</textarea>
-    <br>
-    <input type="submit" value="Send Message">
-</form>
+<div id="index-body">
+    <div id="index-links">
+        <a href="/signup" class="index-link">Sign Up</a>
 
-{{ error }}
+        <a href="/login" class="index-link">Log In</a>
+    </div>
+    <div id="about-us">
+        <div class="bt-sect">
+            <b class="index-title">about us</b>
+            <p>
+                A website is a digital platform that serves as a virtual gateway to information, services, and products on
+                the internet. It is a collection of interconnected web pages, each containing various types of content such
+                as text, images, videos, and interactive elements. Websites are designed to be accessible to users through
+                web browsers, enabling them to browse and interact with the content hosted on the site.
+
+                A well-designed website is essential for individuals, businesses, organizations, and institutions, as it
+                acts as a powerful tool for communication, branding, and engagement with the online audience. It provides a
+                central hub for sharing information, promoting products or services, and establishing an online presence.
+                Websites can range from simple single-page sites to complex web applications with dynamic functionalities.
+            </p>    
+        </div>
+    </div>
+</div>
+<div id="get-in-touch-container">
+    <div id="get-in-touch">
+        <div class="index-title">
+            <b>get in touch...</b>
+        </div>
+        <div id="git-info">
+            <div id="comp-info">
+                <h3>address: 24th Street Boliva, THomas</h3>
+                <br>
+                <h3>email: ilicktoes@gmail.com</h3>
+            </div>
+            <div id="git-form">
+                <form action="/" method="post" autocomplete="off">
+                    {% csrf_token %}
+                    <input name="name" placeholder="Name" class="index-input ii-small">
+                    <input name="email" placeholder="Email" class="index-input ii-small">
+                    <br>
+                    <textarea name="message" cols="40" rows="5" placeholder="Your Message" id="git-message">{{ message }}</textarea>
+                    <br>
+                    <input type="submit" value="Let's Talk!" class="index-submit ii-small">
+                </form>
+            </div>
+        </div> 
+    </div>
+</div>
 
 {% endblock %}

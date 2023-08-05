@@ -43,6 +43,7 @@ class Post(models.Model):
     readablecreated = models.CharField(max_length=50)
     image = models.CharField(max_length=500, null=True)
     likes = models.PositiveIntegerField(default=0)
+    postsize = models.CharField(max_length=50, default="medium")
     objects = PostManager()
 
     class Meta:

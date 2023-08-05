@@ -7,6 +7,7 @@
     <title>Inspire</title>
     <link href="{% static 'styles.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.6.2/plyr.css" />
+    <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet'>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.plyr.io/3.6.2/plyr.js"></script>
     <script>
@@ -15,16 +16,32 @@
         let notiMin = 0
         let notiMax = notiInterval
 
+        const likedicon = $('<img></img>')
+                        .attr('src', '/static/bheart.png')
+                        .addClass('like-icon-img')
+        
+        const unlikedicon = $('<img></img>')
+                        .attr('src', '/static/heart.png')
+                        .addClass('like-icon-img')
+
         let expandNoti = async () => {
             await fetch(`/jsondata/notifications/${notiMin}/${notiMax}`)
                 .then(response => response.json())
                 .then(response => {
                     if (!response.length) {
-                        $('#load-notifications').addClass('hidden')
+                        // $('#load-notifications').addClass('hidden')
                     } else {
                         for (const noti of response) {
                             let notification = $('<tr></tr>')
-                                .html(`${noti[0]} <b>${noti[1]}</b>`)
+                                .addClass('noti-elem')
+
+                            notification.append($('<span></span>')
+                                .html(noti[0])
+                                .addClass('noti-info'))
+
+                            notification.append($('<span></span>')
+                                .html(noti[1])
+                                .addClass('noti-date'))
                             $('#load-notifications').before(notification)
                         }
                     }
@@ -32,21 +49,21 @@
         }
 
         let setLike = async (el) => {
-            console.log(el)
-            let category = $(`#${el}`).attr('id').split('-')[0]
-            let id = $(`#${el}`).attr('id').split('-')[2]
+            let category = el.split('-')[0]
+            let id = el.split('-')[2]
             let icon = $(`#${el}`).children('.like-icon')
             let type = ''
 
             if (icon.attr('data-like') == 'unliked') {
-                icon.html('Unlike')
+                icon.html(likedicon.clone())
                 icon.attr('data-like', 'liked')
                 type = 'like'
             } else if (icon.attr('data-like') == 'liked') {
-                icon.html('Like')
+                icon.html(unlikedicon.clone())
                 icon.attr('data-like', 'unliked')
                 type = 'unlike'
             }
+
 
             const response = await fetch(window.location.href, {
                 method: "PUT",
@@ -89,13 +106,15 @@
                 window.location = `/post/${$(this).attr('data-postid')}`
             })
 
-            $('#search-button').click(function () {
-                let sq = $('#search-input').val().replaceAll(' ','-')
-                window.location = `/search/${sq}`
-            })
-
             $('.tag').click(function () {
                 window.location = `/tag/${$(this)[0].innerText}`
+            })
+
+            $('#search-button').click(function () {
+                let sq = $('#search-input').val()
+                if (sq != '') {
+                    window.location = `/search/${encodeURI(sq)}`
+                }  
             })
 
             $.fn.notificationFade = function () {
@@ -107,27 +126,46 @@
 
 <body>
     <div id="header">
-        <h1>Inspire</h1>
-        {% if user.is_authenticated %}
-        <a href="/feed">Feed</a>
-        <a href="/account">Account</a>
-        <a href="/category">Explore</a>
-        <a href="/favourites">Favourites</a>
-        <div id="search">
-            <input id="search-input" placeholder="Search">
-            <span id="search-button">Go</span>
+        <div id="header-title">
+            <a href="/" id="header-logo-link">
+                <h1 id="header-logo">stay inspired.</h1>
+            </a>
         </div>
-        <div class="notifications">
-            <t class="notification-popup" id="notifications">
-                <a id="load-notifications">Load More</a>
-            </t>
-            <h3 id="notification-bell">Notifications</h3>
+        {% if user.is_authenticated %}
+        <div id="header-links">
+            <a href="/feed" class="link">FEED</a>
+            <a href="/category" class="link">EXPLORE</a>
+            <a href="/favourites" class="link">FAVOURITES</a>
+            <a href="/account" class="link">ACCOUNT</a>
+        </div>
+        <div id="header-misc">
+            <div id="search">
+                <input id="search-input" placeholder="search sumn..." autocomplete="off">
+                <span id="search-button">
+                    <img src="/static/search.png" id="search-icon">
+                </span>
+            </div>
+            <div class="notifications">
+                <t class="notification-popup" id="notifications">
+                    <div id="load-notifications">
+                        <span>LOAD MORE</span>
+                    </div>
+                </t>
+                <h3 id="notification-bell">
+                    <img src="/static/notification.png" id="notification-bell-icon">
+                </h3>
+            </div>
         </div>
         {% endif %}
     </div>
-
-    {% block body %}
-    {% endblock %}
+    <div id="body">
+        {% block body %}
+        {% endblock %}
+    </div>
+    <div id="footer">
+        <h3>by Aaron Arellano</h3>
+        <h3 data-name="FAT THOMAS INC">FTI. 2023®</h3>
+    </div>
 </body>
 
 </html>

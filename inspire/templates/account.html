@@ -1,12 +1,9 @@
-{% extends "layout.html" %}
+{% extends "accountlayout.html" %}
 
-{% block body %}
-<h2>Your Account</h2>
-<a href="/account">Account</a>
-<br>
-<a href="/account/settings">Settings</a>
-<br>
 {% block account %}
-{% endblock %}
+
+<div id="info">
+    {{ user.lastunchange }}
+</div>
 
 {% endblock %}
