@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div id="account">
+    <h2>Your Account</h2>
+    <div id="settings-links">
+        <div class="la-contain">
+            <a href="/account" class="link-alt">account</a>
+        </div>
+        <div class="la-contain">
+            <a href="/account/settings" class="link-alt">settings</a>
+        </div>    
+    </div>
+    <div id="account-flex">
+        {% block account %}
+        {% endblock %}
+    </div>
+    <div id="log-out-contain">
+        <form action="/account" method="post">
+            {% csrf_token %}
+            <input type="hidden" value="logout" name="type">
+            <input type="submit" value="LOG OUT" id="log-out">
+        </form>
+    </div>
+    
+</div>
+
+{% endblock %}

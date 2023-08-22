@@ -1,0 +1,65 @@
+{% extends "account/accountlayout.html" %}
+
+{% block account %}
+
+<div id="settings">
+    <div id="settings-title">
+        <h3>settings</h3>
+        <div class="e-message">
+            {{ usermessage }}
+            {{ emailmessage }}
+            {{ pwmessage }}
+        </div>
+    </div>
+    <div id="settings-forms">
+        <div class="settings-form">
+            <form action="/account/settings" method="post" autocomplete="off">
+                {% csrf_token %}
+                <input hidden name="form-id" value="new-username">
+                <h4 class="settings-sub">set new username</h4>
+                <input name="username" placeholder="new username" class="index-input ii-big">
+                <br>
+                <input name="confirm-username" placeholder="confirm new username" class="index-input ii-big">
+                <br>
+                <input type="submit" value="set" class="index-submit-alt">
+            </form>
+        </div>
+        <div class="settings-form">
+            <form action="/account/settings" method="post" autocomplete="off">
+                {% csrf_token %}
+                <input hidden name="form-id" value="new-email">
+                <h4 class="settings-sub">set new email</h4>
+                <input name="email" placeholder="new email" class="index-input ii-big">
+                <br>
+                <input name="confirm-email" placeholder="confirm new email" class="index-input ii-big">
+                <br>
+                <input type="submit" value="set" class="index-submit-alt">
+            </form>    
+        </div>
+        <div class="settings-form">
+            <form action="/account/settings" method="post" autocomplete="off">
+                {% csrf_token %}
+                <input hidden name="form-id" value="new-pw">
+                <h4 class="settings-sub">set new password</h4>
+                <input name="current-pw" placeholder="Current Password" type="password" class="index-input ii-big">
+                <br>
+                <input name="pw" placeholder="New Password" type="password" class="index-input ii-big">
+                <br>
+                <input name="confirm-pw" placeholder="Confirm New Password" type="password" class="index-input ii-big">
+                <br>
+                <input type="submit" value="set" class="index-submit-alt">
+            </form>    
+        </div>
+        <div class="settings-form">
+            <form action="/account/settings" method="post" autocomplete="off">
+                {% csrf_token %}
+                <input hidden name="form-id" value="delete-account">
+                <b>Delete Account</b>
+                <br>
+                <input type="submit" value="Delete Account" class="index-submit-alt ii-xsmall">
+            </form>    
+        </div>
+    </div>
+</div>
+
+{% endblock %}

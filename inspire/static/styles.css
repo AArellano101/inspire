@@ -118,12 +118,16 @@ h1, #notification-bell, #search {
 
 .link-alt {
     text-decoration: none;
-    font-size: 20px;
-    color:rgb(60, 60, 60);
+    font-size: 16px;
+    color: white;
+    background-color: grey;
+    padding: 8px;
+    border-radius: 100px;
+    margin: 10px 10vw 10px 10vw;
 }
 
 .la-contain {
-    margin: 100% 0% 100% 0%;
+    display: inline-flex;
 }
 
 #index-links {
@@ -431,8 +435,35 @@ body {
     color: black;
 }
 
+#settings {
+    float: left;
+    margin: 3% 2% 5% 2%;
+}
+
 #settings * {
     margin: 4px;
+}
+
+#settings-title {
+    font-weight: 900;
+    border-bottom: 1px solid rgb(185, 185, 185);
+}
+
+.settings-form {
+    display: inline-flex;
+}
+
+#settings-forms {
+    text-align: center;
+}
+
+.settings-sub {
+    text-decoration-line: underline;
+    text-underline-offset: 4px;
+}
+
+#settings-links {
+    text-align: left;
 }
 
 #welcome {
@@ -483,6 +514,10 @@ body {
     text-align: center;
 }
 
+.ii-xsmall {
+    width: 10vw;
+}
+
 .ii-small {
     width: 15vw;
 }
@@ -513,6 +548,19 @@ body {
     text-align: center;
     cursor: pointer;
     background-color: black;
+    color: white;
+}
+
+.index-submit-alt {
+    width: 10vw;
+    font-family: 'Raleway';
+    border: 1px none;
+    padding: 5px;
+    margin-bottom: 10px;
+    border-radius: 20px;
+    text-align: center;
+    cursor: pointer;
+    background-color: rgb(91, 91, 91);
     color: white;
 }
 
@@ -584,12 +632,9 @@ body {
 
 #account-links {
     padding: 5% 10% 5% 10%;
-    border-right: solid 1px rgb(185, 185, 185);
+    border-radius: 10px;
+    background-color: rgb(171, 168, 168);
     text-align: center;
     display: flex;
     flex-direction: column;
-}
-
-#account-info {
-    margin: auto;
 }

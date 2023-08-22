@@ -22,24 +22,24 @@ from urllib.parse import unquote
 env = environ.Env()
 environ.Env.read_env()
 
+
 def index(request):
     if request.method == "GET":
-        return render(request, "index.html")
+        return render(request, "main/index.html")
     elif request.method == "POST":
         name = request.POST.get("name")
         email = request.POST.get("email")
         message = request.POST.get("message")
 
-
         if not len(message):
-            return render(request, "index.html", 
-            {"message": message, "error": "Please write us a message."})
-        
-        usermessage = UserMessage.objects.create_message(name=name, email=email, message=message)
+            return render(request, "main/index.html",
+                          {"message": message, "error": "Please write us a message."})
+
+        usermessage = UserMessage.objects.create_message(
+            name=name, email=email, message=message)
         usermessage.save()
 
-        return render(request, "index.html")
-
+        return render(request, "main/index.html")
 
 
 def signup(request):
@@ -47,22 +47,23 @@ def signup(request):
         if request.user.is_authenticated:
             redirect("/feed")
         data = {"recaptcha_site_key": settings.GOOGLE_RECAPTCHA_SITE_KEY}
-        return render(request, "signup.html", data)
+        return render(request, "create/signup.html", data)
     elif request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
         email = request.POST.get("email")
 
-        data = {"username": username, "password": password, 
+        data = {"username": username, "password": password,
                 "email": email, "recaptcha_site_key": settings.GOOGLE_RECAPTCHA_SITE_KEY}
 
         recaptcha_response = request.POST.get('g-recaptcha-response')
         data = {
-        'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
-        'response': recaptcha_response
+            'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
+            'response': recaptcha_response
         }
-        
-        r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
+
+        r = requests.post(
+            'https://www.google.com/recaptcha/api/siteverify', data=data)
         result = r.json()
         success = False
         if not result["success"]:
@@ -83,13 +84,14 @@ def signup(request):
             success = True
 
         if success:
-            user = InspireUser.objects.create_user(username=username, password=password, email=email)
+            user = InspireUser.objects.create_user(
+                username=username, password=password, email=email)
             user.save()
 
             domain = get_current_site(request).domain
             subject = "Verify Your Email"
             body = render_to_string(
-                "emailverification.html",
+                "create/emailverification.html",
                 {
                     "domain": domain,
                     "uid": urlsafe_base64_encode(force_bytes(user.pk)),
@@ -113,14 +115,15 @@ def signup(request):
             return redirect("/login")
         else:
             data["message"] = message
-            return render(request, "signup.html", data)
+            return render(request, "create/signup.html", data)
+
 
 def loginpage(request):
     if request.method == "GET":
         if request.user.is_authenticated:
             return redirect("/feed")
         else:
-            return render(request, "login.html")
+            return render(request, "create/login.html")
     elif request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -129,12 +132,14 @@ def loginpage(request):
         user = authenticate(request, username=username, password=password)
 
         if user is None:
-            userem = InspireUser.objects.filter(email=username, emailverified=True)
+            userem = InspireUser.objects.filter(
+                email=username, emailverified=True)
             if userem.exists():
                 username = userem.first().username
 
-                user = authenticate(request, username=username, password=password)
-        
+                user = authenticate(
+                    request, username=username, password=password)
+
         if user is not None:
             login(request, user)
 
@@ -143,15 +148,16 @@ def loginpage(request):
             else:
                 request.session.set_expiry(7200)
             return redirect("/feed")
-            
-        return render(request, "login.html", 
-        {"message": """Wrong username/email or password. 
+
+        return render(request, "create/login.html",
+                      {"message": """Wrong username/email or password. 
          Signing in with email must have email verified."""})
+
 
 def forgotpassword(request):
     data = {"user": request.user}
     if request.method == "GET":
-        return render(request, "forgotpassword.html", data)
+        return render(request, "create/forgotpassword.html", data)
     elif request.method == "POST":
         email = request.POST.get("email")
         data["email"] = email
@@ -159,8 +165,8 @@ def forgotpassword(request):
 
         if user.exists():
             if not user[0].emailverified:
-                data["message"] =  "Email has not been verified. Check sent email to verify email."
-                return render(request, "forgotpassword.html", data)     
+                data["message"] = "Email has not been verified. Check sent email to verify email."
+                return render(request, "create/forgotpassword.html", data)
 
             code = random_code()
             print(code)
@@ -174,17 +180,18 @@ def forgotpassword(request):
             )
             print("Email sent.")
 
-            user.update(pwcode = code)
-            user.update(pwcodecreated = datetime.now())
+            user.update(pwcode=code)
+            user.update(pwcodecreated=datetime.now())
 
             return redirect("/forgotpassword/change")
         else:
-            data["message"] =  "Enter valid email."
-            return render(request, "forgotpassword.html", data)     
-        
+            data["message"] = "Enter valid email."
+            return render(request, "create/forgotpassword.html", data)
+
+
 def changepassword(request):
     if request.method == "GET":
-        return render(request, "changepassword.html", {"user": request.user, "authenticated": False})
+        return render(request, "create/changepassword.html", {"user": request.user, "authenticated": False})
     elif request.method == "POST":
         username = request.POST.get("username")
         email = request.POST.get("email")
@@ -193,34 +200,32 @@ def changepassword(request):
         if "check_code" in request.POST:
             code = request.POST.get("code")
 
-            data["authenticated"] =  False
+            data["authenticated"] = False
 
-            user = InspireUser.objects.filter(username=username, email=email, pwcode=code)
+            user = InspireUser.objects.filter(
+                username=username, email=email, pwcode=code)
 
             if user.exists():
                 user = user[0]
 
-                if datetime.now(pytz.utc) - user.pwcodecreated <= timedelta(minutes = 10):
+                if datetime.now(pytz.utc) - user.pwcodecreated <= timedelta(minutes=10):
                     data["authenticated"] = True
                     user.pwcode = None
                     user.save()
-                    return render(request, "changepassword.html", data)
                 else:
                     data["message"] = "Code expired."
-                    return render(request, "changepassword.html", data)
-                    
+
             else:
                 data["message"] = "Invalid username, email or code. Check email for code. Code can only be used once."
-                return render(request, "changepassword.html", data)
         else:
-            data["authenticated"] =  True
+            data["authenticated"] = True
             pw = request.POST.get("new-pw")
             verify_pw = request.POST.get("verify-new-pw")
 
             data["pw"] = pw
             data["verify_pw"] = verify_pw
 
-            user  = InspireUser.objects.get(username=username, email=email)
+            user = InspireUser.objects.get(username=username, email=email)
 
             if pw != verify_pw:
                 data["message"] = "Passwords don't match"
@@ -228,15 +233,16 @@ def changepassword(request):
                 data["message"] = """Password must have at least 1 uppercase letter, 
                 at least 1 lowercase letter, 1 number, 
                 longer than 8 characters, and have no spaces."""
-            elif datetime.now(pytz.utc) - user.pwcodecreated > timedelta(minutes = 10):
+            elif datetime.now(pytz.utc) - user.pwcodecreated > timedelta(minutes=10):
                 data["message"] = "Code expired."
             else:
                 user.set_password(pw)
                 user.save()
                 return redirect("/login")
 
-            return render(request, "changepassword.html", data)
-        
+        return render(request, "create/changepassword.html", data)
+
+
 def activate(request, uidb64, token):
     def get_user_from_email_verification_token(self, token: str):
         try:
@@ -252,7 +258,7 @@ def activate(request, uidb64, token):
             return user
 
         return None
-    
+
     if request.method == "GET":
         user = get_user_from_email_verification_token(uidb64, token)
         user.emailverified = True
@@ -265,7 +271,7 @@ def feed(request):
         if request.user.is_authenticated:
             featured = get_featured()
             liked = get_liked(request.user, list(featured.values()))
-            return render(request, "feed.html", {"user": request.user, "posts": featured, "liked": liked})
+            return render(request, "main/feed.html", {"user": request.user, "posts": featured, "liked": liked})
         else:
             return redirect("/login")
     elif request.method == "PUT":
@@ -274,21 +280,23 @@ def feed(request):
         handle_like(request.user, body)
 
         return HttpResponse(500)
-    
+
+
 def account(request):
     if request.method == "GET":
         if request.user.is_authenticated:
-            return render(request, "account.html", {"user": request.user})
+            return render(request, "account/account.html", {"user": request.user})
         else:
             return redirect("/login")
     elif request.method == "POST":
         logout(request)
         return redirect("/")
-        
+
+
 def accountsettings(request):
     if request.method == "GET":
         if request.user.is_authenticated:
-            return render(request, "accountsettings.html", {"user": request.user})
+            return render(request, "account/accountsettings.html", {"user": request.user})
         else:
             return redirect("/login")
     elif request.method == "POST":
@@ -307,7 +315,7 @@ def accountsettings(request):
             elif not valid_username(username):
                 data["usermessage"] = """Username cannot have spaces, contain any special characters, and cannot exceed 30 characters"""
             elif request.user.lastunchange is not None:
-                if datetime.now(pytz.utc) - request.user.lastunchange > timedelta(days = 1):
+                if datetime.now(pytz.utc) - request.user.lastunchange > timedelta(days=1):
                     request.user.username = username
                     request.user.lastunchange = datetime.now(pytz.utc)
                     request.user.save()
@@ -339,7 +347,7 @@ def accountsettings(request):
             elif not valid_email(email):
                 data["emailmessage"] = "Email invalid."
             elif request.user.lastemailchange is not None:
-                if datetime.now(pytz.utc) - request.user.lastemailchange > timedelta(days = 1):
+                if datetime.now(pytz.utc) - request.user.lastemailchange > timedelta(days=1):
                     request.user.email = email
                     request.user.lastemailchange = datetime.now(pytz.utc)
                     request.user.emailverified = False
@@ -359,7 +367,7 @@ def accountsettings(request):
                 domain = get_current_site(request).domain
                 subject = "Verify Your Email"
                 body = render_to_string(
-                    "emailverification.html",
+                    "create/emailverification.html",
                     {
                         "domain": domain,
                         "uid": urlsafe_base64_encode(force_bytes(request.user.pk)),
@@ -378,13 +386,13 @@ def accountsettings(request):
                 )
                 print("Email sent.")
 
-
         elif formtype == "new-pw":
             currentpw = request.POST.get("current-pw")
             pw = request.POST.get("pw")
             confirmpw = request.POST.get("confirm-pw")
 
-            user = authenticate(request, username=request.user.username, password=currentpw)
+            user = authenticate(
+                request, username=request.user.username, password=currentpw)
 
             if pw != confirmpw:
                 data["pwmessage"] = "Usernames don't match."
@@ -395,7 +403,7 @@ def accountsettings(request):
                 at least 1 lowercase letter, 1 number, 
                 longer than 8 characters, and have no spaces."""
             elif request.user.lastpwchange is not None:
-                if datetime.now(pytz.utc) - request.user.lastpwchange > timedelta(days = 1):
+                if datetime.now(pytz.utc) - request.user.lastpwchange > timedelta(days=1):
                     request.user.set_password(pw)
                     request.user.lastpwchange = datetime.now(pytz.utc)
                     request.user.save()
@@ -410,7 +418,7 @@ def accountsettings(request):
                 request.user.set_password(pw)
                 request.user.lastpwchange = datetime.now(pytz.utc)
                 request.user.save()
-    
+
                 data["pwmessage"] = "Success!"
                 send_success_email = True
                 emailsubject = "New Password"
@@ -420,6 +428,9 @@ def accountsettings(request):
             send_success_email = True
             emailsubject = "Account Deletion"
             emailmessage = "Account to be deleted within the next 2 days."
+
+            UserMessage.objects.create_message(
+                name=request.user.username, email=request.user.email, message="Delete my account")
 
         if send_success_email:
             if request.user.emailverified:
@@ -431,23 +442,24 @@ def accountsettings(request):
                     [request.user.email]
                 )
                 print("Email sent.")
-                
+
             notify(request.user, emailmessage)
-        
-        
-        return render(request, "accountsettings.html", data)
-    
+
+        return render(request, "account/accountsettings.html", data)
+
+
 def staff(request):
     if request.method == "GET":
         if request.user.is_authenticated and request.user.is_staff:
-            return render(request, "staff.html")
+            return render(request, "staff/staff.html")
         else:
             return HttpResponseForbidden()
-        
+
+
 def staffpost(request, ptype):
     if request.method == "GET":
         if request.user.is_authenticated and request.user.is_staff:
-            return render(request, "staffpost.html", {"ptype": ptype})
+            return render(request, "staff/staffpost.html", {"ptype": ptype})
         else:
             return HttpResponseForbidden()
     elif request.method == "POST":
@@ -462,18 +474,21 @@ def staffpost(request, ptype):
             text = request.POST.get("text")
             image = request.POST.get("image")
 
-            text = Text.objects.create_text(title, tags, category, subcats, description, text, image, postsize)
+            text = Text.objects.create_text(
+                title, tags, category, subcats, description, text, image, postsize)
             text.save()
         elif ptype == "video":
             src = request.POST.get("src")
             platform = request.POST.get("platform")
             image = request.POST.get("image")
 
-            video = Video.objects.create_video(title, tags, category, subcats, description, src, platform, image, postsize)
+            video = Video.objects.create_video(
+                title, tags, category, subcats, description, src, platform, image, postsize)
             video.save()
-        
-        return render(request, "staffpost.html", {"ptype": ptype})
-    
+
+        return render(request, "staff/staffpost.html", {"ptype": ptype})
+
+
 def jsondata(request, data, minlimit=0, maxlimit=1, avoid="", maxPost=0, postid="", query="", cattype="", order=""):
     if request.method == "GET":
         if request.user.is_authenticated:
@@ -490,62 +505,65 @@ def jsondata(request, data, minlimit=0, maxlimit=1, avoid="", maxPost=0, postid=
                 r = similar_posts(postid, pavoid, maxPost)
                 updated_liked = get_liked(request.user, get_posts(r))
                 updated_related = get_posts(r, d=True)
-                return JsonResponse({"res": updated_related, "li":updated_liked})
+                return JsonResponse({"res": updated_related, "li": updated_liked})
             elif data == "search":
                 pavoid = avoid.split('-')[:-1]
                 r = searchquery(query, pavoid, maxPost)
                 query = query.replace('-', ' ')[:-1]
                 updated_liked = get_liked(request.user, get_posts(r))
                 updated_results = get_posts(r, d=True)
-                return JsonResponse({"res": updated_results, "li":updated_liked})
+                return JsonResponse({"res": updated_results, "li": updated_liked})
             elif data == "tag":
                 pavoid = avoid.split('-')[:-1]
                 r = tagquery(query, pavoid, maxPost)
                 updated_liked = get_liked(request.user, get_posts(r))
                 updated_results = get_posts(r, d=True)
-                return JsonResponse({"res": updated_results, "li":updated_liked})
+                return JsonResponse({"res": updated_results, "li": updated_liked})
             elif data == "cat":
                 pavoid = avoid.split('-')[:-1]
 
                 if cattype == "all":
                     r = allquery(order, pavoid, maxPost)
                 elif cattype == "cat":
-                    r = catquery(query, q=order,pavoid=pavoid, num=maxPost)  
+                    r = catquery(query, q=order, pavoid=pavoid, num=maxPost)
                 elif cattype == "sub":
-                    r = catquery(query, sc=True, q=order,pavoid=pavoid, num=maxPost)
+                    r = catquery(query, sc=True, q=order,
+                                 pavoid=pavoid, num=maxPost)
                 updated_liked = get_liked(request.user, get_posts(r))
-                updated_results = get_posts(r, d=True)   
-                return JsonResponse({"res": updated_results, "li":updated_liked})
+                updated_results = get_posts(r, d=True)
+                return JsonResponse({"res": updated_results, "li": updated_liked})
             elif data == 'fav':
                 pavoid = avoid.split('-')[:-1]
                 r = favquery(request.user, q=order, pavoid=pavoid, num=maxPost)
                 updated_liked = get_liked(request.user, get_posts(r))
                 updated_related = get_posts(r, d=True)
-                return JsonResponse({"res": updated_related, "li":updated_liked})
+                return JsonResponse({"res": updated_related, "li": updated_liked})
         else:
             return HttpResponseForbidden()
-        
+
+
 def post(request, postid):
     if request.method == "GET":
         if request.user.is_authenticated:
             post = get_post(postid)
             related = get_posts(similar_posts(postid))
             liked = get_liked(request.user, [post] + related)
-            
+
             postids = [post.postid] + [r.postid for r in related]
-            
-            return render(request, "post.html", {"user": request.user, 
-                        "post": post, "liked": liked, "results": related,
-                        "postids": json.dumps(postids), "qtype": "post"})
+
+            return render(request, "queries/post.html", {"user": request.user,
+                                                 "post": post, "liked": liked, "results": related,
+                                                 "postids": json.dumps(postids), "qtype": "post"})
         else:
             return redirect("/login")
     elif request.method == "PUT":
         body = json.loads(request.body)
-        
+
         handle_like(request.user, body)
 
         return HttpResponse(500)
-    
+
+
 def search(request, query):
     if request.method == "GET":
         if request.user.is_authenticated:
@@ -554,18 +572,19 @@ def search(request, query):
             results = get_posts(postids)
             liked = get_liked(request.user, results)
 
-            return render(request, "search.html", {"user": request.user,
-                        "results": results, "liked": liked, "postids": json.dumps(postids), 
-                        "query": query, "squery": squery, "qtype": "search"})
+            return render(request, "queries/search.html", {"user": request.user,
+                                                   "results": results, "liked": liked, "postids": json.dumps(postids),
+                                                   "query": query, "squery": squery, "qtype": "search"})
         else:
             return redirect("/login")
     elif request.method == "PUT":
         body = json.loads(request.body)
-        
+
         handle_like(request.user, body)
 
         return HttpResponse(500)
-    
+
+
 def tag(request, qtag):
     if request.method == "GET":
         if request.user.is_authenticated:
@@ -573,22 +592,23 @@ def tag(request, qtag):
             results = get_posts(postids)
             liked = get_liked(request.user, results)
 
-            return render(request, "tag.html", {"user": request.user, 
-                        "results": results, "liked": liked, "postids": json.dumps(postids), 
-                        "tag": qtag, "qtype": "tag"})
+            return render(request, "queries/tag.html", {"user": request.user,
+                                                "results": results, "liked": liked, "postids": json.dumps(postids),
+                                                "tag": qtag, "qtype": "tag"})
         else:
             return redirect("/login")
     elif request.method == "PUT":
         body = json.loads(request.body)
         handle_like(request.user, body)
         return HttpResponse(500)
-    
-def categories(request, path=""): 
+
+
+def categories(request, path=""):
     def catrcat(c):
         cats = {}
         c = list(c.keys())
         for cat in c:
-            cats[cat] = cat.title().replace('-',' ')
+            cats[cat] = cat.title().replace('-', ' ')
 
         return cats
 
@@ -617,17 +637,18 @@ def categories(request, path=""):
             results = get_posts(postids)
             liked = get_liked(request.user, results)
             rcats = catrcat(cats)
-            return render(request, "categories.html", {"user": request.user,
-                    "cats": rcats, "results": results, "liked": liked, 
-                    "postids": json.dumps(postids), "path": paths, "cattype": cat, 
-                    "category": qcategory, "qtype": "cat"})
+            return render(request, "queries/categories.html", {"user": request.user,
+                                                       "cats": rcats, "results": results, "liked": liked,
+                                                       "postids": json.dumps(postids), "path": paths, "cattype": cat,
+                                                       "category": qcategory, "qtype": "cat"})
         else:
             return redirect("/login")
     elif request.method == "PUT":
         body = json.loads(request.body)
         handle_like(request.user, body)
         return HttpResponse(500)
-    
+
+
 def favourites(request):
     if request.method == "GET":
         if request.user.is_authenticated:
@@ -635,9 +656,9 @@ def favourites(request):
             results = get_posts(postids)
             liked = get_liked(request.user, results)
 
-            return render(request, "favourites.html", {"user": request.user, 
-                        "results": results, "liked": liked, "postids": json.dumps(postids), 
-                        "qtype": "fav"})
+            return render(request, "queries/favourites.html", {"user": request.user,
+                                                       "results": results, "liked": liked, "postids": json.dumps(postids),
+                                                       "qtype": "fav"})
         else:
             return redirect("/login")
     elif request.method == "PUT":

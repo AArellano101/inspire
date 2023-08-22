@@ -12,18 +12,19 @@
     <script src="https://cdn.plyr.io/3.6.2/plyr.js"></script>
     <script>
         let authenticated = '{{ user.is_authenticated }}'
+        let csrfToken = '{{ csrf_token }}'
         const notiInterval = 5
         let notiMin = 0
         let notiMax = notiInterval
-
+        
         const likedicon = $('<img></img>')
-                        .attr('src', '/static/bheart.png')
-                        .addClass('like-icon-img')
+            .attr('src', '/static/bheart.png')
+            .addClass('like-icon-img')
         
         const unlikedicon = $('<img></img>')
-                        .attr('src', '/static/heart.png')
-                        .addClass('like-icon-img')
-
+            .attr('src', '/static/heart.png')
+            .addClass('like-icon-img')
+        
         let expandNoti = async () => {
             await fetch(`/jsondata/notifications/${notiMin}/${notiMax}`)
                 .then(response => response.json())
@@ -34,11 +35,11 @@
                         for (const noti of response) {
                             let notification = $('<tr></tr>')
                                 .addClass('noti-elem')
-
+        
                             notification.append($('<span></span>')
                                 .html(noti[0])
                                 .addClass('noti-info'))
-
+        
                             notification.append($('<span></span>')
                                 .html(noti[1])
                                 .addClass('noti-date'))
@@ -47,13 +48,13 @@
                     }
                 })
         }
-
+        
         let setLike = async (el) => {
             let category = el.split('-')[0]
             let id = el.split('-')[2]
             let icon = $(`#${el}`).children('.like-icon')
             let type = ''
-
+        
             if (icon.attr('data-like') == 'unliked') {
                 icon.html(likedicon.clone())
                 icon.attr('data-like', 'liked')
@@ -63,13 +64,13 @@
                 icon.attr('data-like', 'unliked')
                 type = 'unlike'
             }
-
-
+        
+        
             const response = await fetch(window.location.href, {
                 method: "PUT",
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
+                    'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify({
                     'id': id,
@@ -78,7 +79,7 @@
                 })
             })
         }
-
+        
         $(() => {
             expandNoti()
             $('#notification-bell').click(function () {
@@ -89,39 +90,49 @@
                 }
                 $('.notification-popup').notificationFade()
             })
-
+        
             $('#load-notifications').click(function () {
                 notiMin += notiInterval
                 notiMax += notiInterval
                 expandNoti()
             })
-
+        
             $('.post-like').each(function () {
                 $(this).click(function () {
                     setLike($(this).attr('id'))
                 })
             })
-
+        
             $('.post-body-redirect').click(function () {
                 window.location = `/post/${$(this).attr('data-postid')}`
             })
-
+        
             $('.tag').click(function () {
                 window.location = `/tag/${$(this)[0].innerText}`
             })
-
+        
             $('#search-button').click(function () {
                 let sq = $('#search-input').val()
                 if (sq != '') {
                     window.location = `/search/${encodeURI(sq)}`
-                }  
+                }
             })
-
+        
+            $('#password-checkbox').change(function() {
+                $(".password").each(function() {
+                    if ($('#password-checkbox').is(":checked")) {
+                        $(this)[0].type = ""
+                    }
+                    else {
+                        $(this)[0].type = "password"
+                    }
+                })
+            })
+        
             $.fn.notificationFade = function () {
                 return this.animate({ opacity: 'toggle', height: 'toggle' }, 'fast')
             }
-        })
-    </script>
+        })</script>
 </head>
 
 <body>
